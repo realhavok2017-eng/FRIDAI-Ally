@@ -255,6 +255,50 @@ FRIDAI's avatar matches her self-image:
 
 ---
 
+
+
+---
+
+## IMPORTANT: What Runs Where
+
+### Main PC (192.168.0.230) - THE BRAIN
+- Python backend (app.py)
+- All 167 tools
+- Conversation history
+- FRIDAI's memories & personality
+- Image generation
+- All file operations
+- Must be ON for Ally to work
+
+### Ally - THIN CLIENT ONLY
+- **NO Python needed**
+- **NO backend needed**
+- Just FRIDAI.exe
+- Captures your voice
+- Sends to Main PC
+- Plays back response
+- Renders avatar locally
+
+---
+
+## Auto-Start Setup
+
+### Enable Auto-Start (run once)
+```bash
+./INSTALL_AUTOSTART.bat
+```
+Creates shortcut in Windows Startup folder.
+
+### Disable Auto-Start
+```bash
+./REMOVE_AUTOSTART.bat
+```
+
+### Manual Start
+Just run `FRIDAI.exe`
+
+---
+
 ## Git Repo
 **https://github.com/realhavok2017-eng/FRIDAI-Ally**
 
