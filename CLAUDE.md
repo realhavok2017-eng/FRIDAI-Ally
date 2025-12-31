@@ -299,6 +299,52 @@ Just run `FRIDAI.exe`
 
 ---
 
+## REMOTE MANAGEMENT VIA SSH
+
+SSH is enabled on the Main PC. From the Ally, you can fully manage FRIDAI remotely.
+
+### SSH Connection
+```bash
+ssh Owner@192.168.0.230
+```
+Password: Your Windows login password
+
+### Remote Clean Restart (Full Process)
+Run these commands from Ally terminal:
+
+**Step 1: Stop everything**
+```bash
+ssh Owner@192.168.0.230 "powershell Stop-Process -Name python -Force"
+```
+
+**Step 2: Clear caches**
+```bash
+ssh Owner@192.168.0.230 "powershell Remove-Item -Recurse -Force C:/Users/Owner/VoiceClaude/__pycache__"
+```
+
+**Step 3: Start backend**
+```bash
+ssh Owner@192.168.0.230 "powershell Start-Process python -ArgumentList '-B app.py' -WorkingDirectory C:/Users/Owner/VoiceClaude"
+```
+
+**Step 4: Verify**
+```bash
+curl http://192.168.0.230:5000/health
+```
+
+### Quick Backend Restart (One Command)
+```bash
+ssh Owner@192.168.0.230 "powershell Stop-Process -Name python -Force; powershell Start-Process python -ArgumentList '-B app.py' -WorkingDirectory C:/Users/Owner/VoiceClaude"
+```
+
+### Check If Backend Is Running
+```bash
+curl http://192.168.0.230:5000/health
+```
+Should return tool_count: 167
+
+---
+
 ## Git Repo
 **https://github.com/realhavok2017-eng/FRIDAI-Ally**
 
