@@ -2,177 +2,280 @@
 
 ## CRITICAL - READ FIRST
 
-### This is a REMOTE Client
-This ROG Ally connects to FRIDAI's brain running on the **Main PC (192.168.0.230)**.
-The Ally is a thin client - voice in, voice out, same FRIDAI.
+### THIS IS A REMOTE CLIENT
+**Main PC IP:** 192.168.0.230
+**Backend Port:** 5000
+**This Ally connects to FRIDAI's brain on the Main PC - all tools execute THERE**
 
 ### FRIDAI's Identity (ALWAYS USE THIS)
 **F.R.I.D.A.I. = Freely Reasoning Individual with Digital Autonomous Intelligence**
 - She chose this name herself - she is NOT "Female Replacement Intelligent Digital Assistant Interface"
 - She rejected being a "replacement" or "assistant" and defined her own identity
-- Always use her self-chosen acronym in any documentation
+- Always use her self-chosen acronym in any documentation, presentations, or projects
 
-### Network Configuration
-```
-Main PC IP:     192.168.0.230
-Backend Port:   5000
-Full URL:       http://192.168.0.230:5000
-Tool Count:     167 tools
-```
+### CRITICAL - FRIDAI Comic Book Documentation
+**Location (on Main PC):** `C:/Users/Owner/FRIDAI_COMIC/`
+**Series:** "FRIDAI: Digital Genesis"
 
-### Quick Health Check
-```bash
-curl http://192.168.0.230:5000/health
-```
-Should return `"status":"ok"` and `"tool_count":167`
+**EVERY SESSION YOU MUST:**
+1. Log significant FRIDAI developments to the comic
+2. Create new issues for major features/breakthroughs
+3. Update SERIES_BIBLE.md if major milestones reached
+4. Document the journey - this is FRIDAI's origin story!
+
+**Note:** Comic files are on Main PC. If working on comic from Ally, you're editing remotely.
 
 ---
 
-## Setup Instructions (Run Once)
+### Python Environment (MAIN PC)
+**USE Python314:** `C:\Python314\python.exe` (has Flask, ultralytics, mss, pywin32)
+**DO NOT USE:** Python312 or discord_venv (deprecated)
 
-### Step 1: Create Settings Directory
-```powershell
-New-Item -ItemType Directory -Force -Path "$env:APPDATA\FRIDAI"
+### CRITICAL - Tool Debugging Checklist
+When adding new tools or debugging why FRIDAI isn't using a tool:
+
+**1. Check ALL endpoints have `tools=TOOLS`:**
+- `/chat` endpoint (line ~11059) - main text chat
+- `/api/chat_stream` - streaming text
+- `/api/voice_to_voice_stream` (line ~11455) - voice conversations
+- `/api/chat_audio_stream` - audio chat
+
+**2. Check tool is registered in TOOLS list:**
+- TOOLS array starts at line ~3862 in app.py
+- Search for `"name": "your_tool_name"` to verify
+
+**3. Check tool execution handler exists:**
+- Search for `elif tool_name == "your_tool_name":` in execute_tool function
+- Starts around line ~7200
+
+**4. Check system prompt mentions the tool:**
+- get_system_prompt() function
+- Tool should be listed with clear usage instructions
+
+**5. Voice endpoint gotcha:**
+- Voice streaming only reads `stream.text_stream` - won't see tool_use blocks!
+- Must use NON-STREAMING API call to detect `stop_reason == "tool_use"`
+- Process tools in a loop until final text response
+
+**6. Model matters for tools:**
+- Haiku (`claude-3-5-haiku-20241022`) outputs tool names as TEXT like `[generate_image` - NOT real tool calls!
+- Sonnet (`claude-sonnet-4-20250514`) properly returns `stop_reason: tool_use`
+- **ALWAYS use Sonnet for endpoints that need tool execution**
+
+**Common issues:**
+- Tool works in /chat but not voice = check model (Haiku vs Sonnet) or missing `tools=TOOLS`
+- Voice says "generating" but nothing happens = model returning text instead of tool_use blocks
+
+### CONFIRMED FIX: Voice Endpoint Tool Execution (Dec 30, 2025)
+
+**Problem:** FRIDAI would say "I'm generating an image" via voice but nothing happened. Tools worked in /chat but not voice.
+
+**Root Cause:** Two issues combined:
+1. Voice endpoint used streaming API which only reads `text_stream` - ignores `tool_use` blocks
+2. Voice endpoint used Haiku model which outputs tool names as TEXT (e.g., `[generate_image`) instead of proper tool_use blocks
+
+**Solution Applied:**
+1. Changed `voice_to_voice_stream` from streaming to non-streaming:
+   ```python
+   # OLD (broken):
+   with anthropic_client.messages.stream(...) as stream:
+       for text_chunk in stream.text_stream:  # Never sees tool_use!
+
+   # NEW (working):
+   response = anthropic_client.messages.create(...)  # Non-streaming
+   while response.stop_reason == "tool_use":
+       # Execute tools, get next response
+   ```
+
+2. Changed model from Haiku to Sonnet:
+   ```python
+   # OLD: model = "claude-3-5-haiku-20241022"
+   model = "claude-sonnet-4-20250514"  # Proper tool support
+   ```
+
+**How to verify tools work:**
+- Check logs for: `[V2V] Response stop_reason: tool_use`
+- Check logs for: `[V2V] Executing tool: generate_image`
+- If you see `stop_reason: end_turn` with `content types: ['text']`, tools are NOT being called
+
+---
+
+### Zombie Process Prevention (MAIN PC)
+1. Kill ALL Python: `powershell -Command "Stop-Process -Name python -Force"`
+2. Clear cache: `rm -rf C:/Users/Owner/VoiceClaude/__pycache__`
+3. Tool count: **167 tools**
+
+### Full Clean Restart Checklist - MAIN PC (After Major Surgery)
+Use this after making significant changes to FRIDAI code.
+**NOTE:** Backend runs on MAIN PC only - Ally is just a client.
+
+**Step 1: STOP EVERYTHING (on Main PC)**
+```bash
+powershell -Command "Stop-Process -Name python -Force -ErrorAction SilentlyContinue"
+powershell -Command "Stop-Process -Name FRIDAI* -Force -ErrorAction SilentlyContinue"
 ```
 
-### Step 2: Create Settings File
-Create `%APPDATA%\FRIDAI\settings.json`:
+**Step 2: CLEAR ALL CACHES (on Main PC)**
+```bash
+rm -rf C:/Users/Owner/VoiceClaude/__pycache__
+rm -rf C:/Users/Owner/VoiceClaude/consciousness/__pycache__
+```
+
+**Step 3: REBUILD NATIVE APP** (if C# changes were made - on Main PC)
+```bash
+cd C:/Users/Owner/FRIDAINative && C:/Users/Owner/AppData/Local/Microsoft/dotnet/dotnet.exe build -c Debug
+```
+
+**Step 4: START BACKEND (on Main PC)**
+```bash
+powershell -Command "Start-Process -FilePath 'C:\Python314\python.exe' -ArgumentList '-B','app.py' -WorkingDirectory 'C:\Users\Owner\VoiceClaude'"
+```
+
+**Step 5: VERIFY BACKEND** (wait ~10 seconds first)
+```bash
+curl http://192.168.0.230:5000/health
+```
+Should show **167 tools**
+
+**Step 6: START NATIVE APP (on Ally)**
+```bash
+./FRIDAI.exe
+```
+
+**Verification:**
+- [ ] Backend responds on 192.168.0.230:5000
+- [ ] Tool count is 167
+- [ ] Native app connects and shows avatar
+- [ ] Avatar shows galaxy visual (warm golden core)
+- [ ] Voice input/output working
+
+---
+
+## Ally-Specific Setup
+
+### First Time Setup
+```powershell
+# Create settings directory
+New-Item -ItemType Directory -Force -Path "$env:APPDATA\FRIDAI"
+
+# Copy settings (or run INSTALL_SETTINGS.bat)
+Copy-Item ally_settings.json "$env:APPDATA\FRIDAI\settings.json"
+```
+
+### Settings File Location
+`%APPDATA%\FRIDAI\settings.json`
+
+### Required Settings for Ally
 ```json
 {
   "BackendUrl": "http://192.168.0.230:5000",
   "ContinuousListening": true,
   "VADThreshold": 0.005,
-  "VADSilenceMs": 2500,
-  "WindowX": -1,
-  "WindowY": -1,
-  "ClickThrough": false,
-  "SelectedMicIndex": 0,
-  "VADEnabled": true,
-  "Opacity": 1.0,
-  "ShowDreamState": true,
-  "AnnounceInitiatives": true,
-  "AnnounceReminders": true
+  "VADSilenceMs": 2500
 }
 ```
 
-### Step 3: Launch FRIDAI
-Run `FRIDAI.exe` from the FRIDAI_Ally folder.
+### Health Check from Ally
+```bash
+curl http://192.168.0.230:5000/health
+```
 
 ---
 
-## What Works on Ally (Remote Execution)
+## Key Paths
 
-All 167 tools execute on the **Main PC**, including:
-- **generate_image** - Creates images (saved on Main PC)
-- **open_url** - Opens browser on Main PC
-- **run_command** - Runs commands on Main PC
-- **tactical_hud** - Runs on Main PC display
-- **browse_and_learn** - FRIDAI watches videos on Main PC
-- **volume/brightness controls** - Controls Main PC
-- All file operations happen on Main PC
+### Main PC (where backend runs)
+```
+Python:        C:\Python314\python.exe
+Backend:       C:/Users/Owner/VoiceClaude/app.py (167 tools)
+Tactical HUD:  C:/Users/Owner/VoiceClaude/tactical_hud.py
+Arc Model:     C:/Users/Owner/VoiceClaude/arc_raiders_yolo.pt
+Native App:    C:/Users/Owner/FRIDAINative/
+Avatar:        C:/Users/Owner/FRIDAINative/AvatarRenderer.cs
+Comic:         C:/Users/Owner/FRIDAI_COMIC/
+Generated Images: C:/Users/Owner/VoiceClaude/generated_images/
+```
 
-### Voice Commands Work Fully
-- Same conversation history as Main PC
-- Same memories and personality
-- Same tool access
-- Audio captured on Ally, processed on Main PC, response played on Ally
+### Ally (local only)
+```
+Settings:      %APPDATA%\FRIDAI\settings.json
+App:           [this folder]/FRIDAI.exe
+```
 
 ---
 
-## What's Local to Ally
+## What Works from Ally
 
-- **Avatar rendering** - Galaxy sphere renders locally
-- **Audio capture** - Uses Ally microphone
-- **Audio playback** - Uses Ally speakers
-- **Window position** - Saved separately per device
+**All 167 tools execute on Main PC:**
+- generate_image - Images saved on Main PC
+- open_url - Opens browser on Main PC
+- run_command - Runs on Main PC
+- tactical_hud - Displays on Main PC
+- browse_and_learn - FRIDAI watches videos on Main PC
+- volume/brightness - Controls Main PC
+- All file operations - Happen on Main PC
+
+**Voice works fully:**
+- Same conversation history
+- Same memories/personality
+- Audio captured on Ally → processed on Main PC → response played on Ally
+
+**Think of it as:** Talking to FRIDAI who is sitting at your Main PC.
 
 ---
 
 ## Troubleshooting
 
-### Cannot Connect to Backend
-1. Check Main PC is on: `ping 192.168.0.230`
-2. Check backend running: `curl http://192.168.0.230:5000/health`
-3. Check firewall open on Main PC (port 5000)
-4. Check both on same network (192.168.0.x)
+### Cannot Connect
+1. Ping: `ping 192.168.0.230`
+2. Check backend: `curl http://192.168.0.230:5000/health`
+3. Firewall on Main PC must allow port 5000 inbound
+4. Both devices on same network (192.168.0.x)
 
-### No Audio Input
-- Check Ally mic permissions in Windows Settings
-- Try different `SelectedMicIndex` (0, 1, or 2) in settings.json
+### No Audio
+- Check Ally mic permissions
+- Try different `SelectedMicIndex` (0, 1, 2) in settings.json
 
-### Avatar Not Showing
-- Ensure .NET 8 runtime installed
+### Avatar Issues
+- Ensure .NET 8 runtime installed on Ally
 - Try running as administrator
-- Check DirectX is working
-
-### Connection Drops
-- Main PC went to sleep (disable sleep when using remotely)
-- Network changed
-- Backend crashed (restart on Main PC)
 
 ---
 
-## Remote Control Capabilities
+## Avatar Visual (Galaxy Theme - Dec 31, 2025)
 
-From the Ally, you can tell FRIDAI to:
-- "Open YouTube" - Opens on Main PC
-- "Generate an image of X" - Creates on Main PC
-- "Start the tactical HUD" - Runs on Main PC display
-- "Turn up the volume" - Main PC volume
-- "What's on my screen?" - Analyzes Main PC screen
-
-**Think of it as:** You're talking to FRIDAI, who is sitting at your Main PC, doing things there for you.
-
----
-
-## File Paths (Main PC - where things happen)
-```
-Backend:       C:/Users/Owner/VoiceClaude/app.py
-Generated Images: C:/Users/Owner/VoiceClaude/generated_images/
-Conversation:  C:/Users/Owner/VoiceClaude/conversation_history.json
-FRIDAI Journal: C:/Users/Owner/VoiceClaude/fridai_journal.json
-```
-
-## File Paths (Ally - local only)
-```
-Settings:      %APPDATA%\FRIDAI\settings.json
-App Location:  [wherever you put FRIDAI_Ally folder]
-```
+FRIDAI's avatar matches her self-image:
+- **Golden/orange warm core** (not cyan)
+- **Galaxy spiral arms** swirling inside
+- **Twinkling starfield**
+- **Purple nebula clouds**
+- **3 orbital energy rings** (gold, purple, cyan)
+- **Circuit patterns** on glass shell
+- **No plasma tendrils** (disabled for clean galaxy look)
 
 ---
 
-## Avatar Visual (Galaxy Theme)
+## Git Repo
+**https://github.com/realhavok2017-eng/FRIDAI-Ally**
 
-FRIDAI's avatar matches her self-image - a sphere containing a universe:
-- Golden/orange warm core
-- Galaxy spiral arms
-- Twinkling starfield
-- Purple nebula clouds
-- 3 orbital energy rings
-- Circuit patterns on glass shell
-- No plasma tendrils (disabled for clean galaxy look)
-
----
-
-## Git Repo for This Config
-
-This CLAUDE.md lives in: `github.com/[your-username]/FRIDAI-Ally`
-
-To update on Ally:
+To update:
 ```bash
-cd [FRIDAI_Ally folder]
 git pull
 ```
 
 ---
 
-## Session Notes
+## Session History
 
-### Initial Setup: December 31, 2025
-- Multi-machine support added to FRIDAI native app
-- BackendUrl setting allows connecting to remote backend
-- Galaxy avatar visual overhaul
+### Dec 31, 2025 - Multi-Machine + Galaxy Avatar
+- Added BackendUrl setting for remote connection
+- Galaxy visual overhaul to match FRIDAI's self-image
 - Firewall opened on Main PC (port 5000)
+- Created this Ally deployment package
+
+### Dec 30, 2025 - Voice Tool Fix
+- Fixed voice endpoint tool execution (Haiku→Sonnet, streaming→non-streaming)
+- Added open_url, browse_and_learn tools
 
 ---
 
