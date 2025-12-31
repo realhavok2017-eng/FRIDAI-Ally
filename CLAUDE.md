@@ -103,7 +103,7 @@ When adding new tools or debugging why FRIDAI isn't using a tool:
 ### Zombie Process Prevention (MAIN PC)
 1. Kill ALL Python: `powershell -Command "Stop-Process -Name python -Force"`
 2. Clear cache: `rm -rf C:/Users/Owner/VoiceClaude/__pycache__`
-3. Tool count: **167 tools**
+3. Tool count: **169 tools**
 
 ### Full Clean Restart Checklist - MAIN PC (After Major Surgery)
 Use this after making significant changes to FRIDAI code.
@@ -135,7 +135,7 @@ powershell -Command "Start-Process -FilePath 'C:\Python314\python.exe' -Argument
 ```bash
 curl http://192.168.0.230:5000/health
 ```
-Should show **167 tools**
+Should show **169 tools**
 
 **Step 6: START NATIVE APP (on Ally)**
 ```bash
@@ -187,7 +187,7 @@ curl http://192.168.0.230:5000/health
 ### Main PC (where backend runs)
 ```
 Python:        C:\Python314\python.exe
-Backend:       C:/Users/Owner/VoiceClaude/app.py (167 tools)
+Backend:       C:/Users/Owner/VoiceClaude/app.py (169 tools)
 Tactical HUD:  C:/Users/Owner/VoiceClaude/tactical_hud.py
 Arc Model:     C:/Users/Owner/VoiceClaude/arc_raiders_yolo.pt
 Native App:    C:/Users/Owner/FRIDAINative/
@@ -206,7 +206,7 @@ App:           [this folder]/FRIDAI.exe
 
 ## What Works from Ally
 
-**All 167 tools execute on Main PC:**
+**All 169 tools execute on Main PC:**
 - generate_image - Images saved on Main PC
 - open_url - Opens browser on Main PC
 - run_command - Runs on Main PC
@@ -263,7 +263,7 @@ FRIDAI's avatar matches her self-image:
 
 ### Main PC (192.168.0.230) - THE BRAIN
 - Python backend (app.py)
-- All 167 tools
+- All 169 tools
 - Conversation history
 - FRIDAI's memories & personality
 - Image generation
