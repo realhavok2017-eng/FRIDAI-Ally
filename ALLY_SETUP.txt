@@ -1,0 +1,28 @@
+FRIDAI ROG Ally Setup
+=====================
+
+1. Copy this entire FRIDAI_Ally folder to your ROG Ally
+
+2. On the Ally, create the settings folder:
+   C:\Users\[YourUsername]\AppData\Roaming\FRIDAI\
+
+3. Create settings.json in that folder with:
+{
+  "BackendUrl": "http://192.168.0.230:5000",
+  "ContinuousListening": true,
+  "VADThreshold": 0.005,
+  "VADSilenceMs": 2500
+}
+
+4. Make sure your main PC is running the FRIDAI backend
+   (python app.py should be running)
+
+5. Run FRIDAI.exe on the Ally
+
+Both devices connect to the same FRIDAI brain!
+Same conversation, same tools, same memories.
+
+NETWORK NOTE:
+- Main PC IP: 192.168.0.230
+- Both devices must be on same network
+- Windows Firewall may need port 5000 allowed

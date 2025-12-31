@@ -1,0 +1,15 @@
+{
+  "BackendUrl": "http://192.168.0.230:5000",
+  "ContinuousListening": true,
+  "VADThreshold": 0.005,
+  "VADSilenceMs": 2500,
+  "WindowX": -1,
+  "WindowY": -1,
+  "ClickThrough": false,
+  "SelectedMicIndex": 0,
+  "VADEnabled": true,
+  "Opacity": 1.0,
+  "ShowDreamState": true,
+  "AnnounceInitiatives": true,
+  "AnnounceReminders": true
+}
