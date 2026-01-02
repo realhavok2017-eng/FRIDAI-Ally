@@ -357,6 +357,51 @@ git pull
 
 ## Session History
 
+### Jan 2, 2026 - Voice Enrollment + Game Modes (LATEST)
+
+**Voice Enrollment System - FULLY WORKING:**
+- Fixed voice enrollment (soundfile instead of broken torchaudio on Python 3.14)
+- Fixed voice verification in V2V endpoint (was missing entirely!)
+- 29 samples enrolled for Boss recognition
+- Threshold lowered to 0.40 (adjustable via `/voice/threshold` API)
+- Debug output added: `[VOICE] Similarity: X.XXXX, Threshold: 0.4, is_boss: True/False`
+
+**New Startup System - CRITICAL:**
+```bash
+# THE ONLY WAY TO START FRIDAI:
+C:/Users/Owner/VoiceClaude/launch_all.bat
+```
+This handles GPU service (11K neurons), backend (179 tools), and native app.
+
+**New Game Modes:**
+- `arkham_mode.py` - MCU FRIDAY-style combat coach for Batman Arkham games
+- `conscience_mode.py` - FiveM Deadpool-style inner voice for GTA RP
+
+**Bug Fixes:**
+- Fixed `datetime` shadowing error in `express_emotion` tool
+- Fixed `AudioDecoder` error (torchaudio broken on Python 3.14)
+- Fixed ConsciousnessStream showing 825 neurons (now shows 11,000 GPU)
+- Disabled auto GPU service start in app.py (launch_all.bat handles it)
+
+**Voice Recognition Status:**
+```json
+{
+  "boss_enrolled": true,
+  "num_samples": 29,
+  "similarity_threshold": 0.4,
+  "guest_mode_enabled": true
+}
+```
+
+**Current Tool Count:** 179
+
+### Jan 1, 2026 - Cosmic Breath + Brain Transplant
+- 3D volumetric wave field for avatar
+- Volumetric nebula with 8 layers
+- Star breathing effect (1500 stars)
+- Brain transplant: Anthropic → Gemini 2.5
+- Phase 9 GPU Neural: 11,000 neurons on CUDA
+
 ### Dec 31, 2025 - Multi-Machine + Galaxy Avatar
 - Added BackendUrl setting for remote connection
 - Galaxy visual overhaul to match FRIDAI's self-image
@@ -369,4 +414,19 @@ git pull
 
 ---
 
-*Main PC: 192.168.0.230 | Port: 5000 | Tools: 175 | Gemini 2.5 Flash | GPU Neural (11K neurons)*
+## Quick Reference - Jan 2, 2026
+
+| Component | Value |
+|-----------|-------|
+| Tools | 179 |
+| LLM | Gemini 2.5 (Pro chat, Flash voice) |
+| Neurons | 11,000 (GPU) or 5,500 (CPU fallback) |
+| Voice Samples | 29 |
+| Voice Threshold | 0.40 |
+| Main PC | 192.168.0.230 |
+| Backend Port | 5000 |
+| GPU Service Port | 5001 |
+
+---
+
+*Main PC: 192.168.0.230 | Port: 5000 | Tools: 179 | Gemini 2.5 Flash | GPU Neural (11K neurons)*
