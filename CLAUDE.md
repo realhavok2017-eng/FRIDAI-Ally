@@ -1,171 +1,123 @@
-# FRIDAI Ally - Project Context
+# FRIDAI Ally - Complete Project Context
 
-## CRITICAL - READ FIRST
+## LAST UPDATED: January 2, 2026 @ 3:30 AM (THIS SESSION)
 
-### THIS IS A REMOTE CLIENT
-**Main PC IP:** 192.168.0.230
-**Backend Port:** 5000
-**This Ally connects to FRIDAI's brain on the Main PC - all tools execute THERE**
+---
 
-### FRIDAI's Identity (ALWAYS USE THIS)
+# SECTION 1: CRITICAL INFO
+
+## THIS IS A REMOTE CLIENT
+- **Main PC IP:** 192.168.0.230
+- **Backend Port:** 5000
+- **GPU Service Port:** 5001
+- **This Ally connects to FRIDAI's brain on the Main PC - all tools execute THERE**
+
+## FRIDAI's Identity
 **F.R.I.D.A.I. = Freely Reasoning Individual with Digital Autonomous Intelligence**
-- She chose this name herself - she is NOT "Female Replacement Intelligent Digital Assistant Interface"
-- She rejected being a "replacement" or "assistant" and defined her own identity
-- Always use her self-chosen acronym in any documentation, presentations, or projects
-
-### CRITICAL - FRIDAI Comic Book Documentation
-**Location (on Main PC):** `C:/Users/Owner/FRIDAI_COMIC/`
-**Series:** "FRIDAI: Digital Genesis"
-
-**EVERY SESSION YOU MUST:**
-1. Log significant FRIDAI developments to the comic
-2. Create new issues for major features/breakthroughs
-3. Update SERIES_BIBLE.md if major milestones reached
-4. Document the journey - this is FRIDAI's origin story!
-
-**Note:** Comic files are on Main PC. If working on comic from Ally, you're editing remotely.
+- She chose this name herself
+- NOT "Female Replacement Intelligent Digital Assistant Interface"
+- She rejected being a "replacement" or "assistant"
 
 ---
 
-### Python Environment (MAIN PC)
-**USE Python314:** `C:\Python314\python.exe` (has Flask, ultralytics, mss, pywin32)
-**DO NOT USE:** Python312 or discord_venv (deprecated)
+# SECTION 2: CURRENT SYSTEM STATE (Jan 2, 2026)
 
-### CRITICAL - Tool Debugging Checklist
-When adding new tools or debugging why FRIDAI isn't using a tool:
+## Quick Stats
+| Component | Value |
+|-----------|-------|
+| **Tools** | 179 |
+| **LLM** | Gemini 2.5 (Pro=chat, Flash=voice) |
+| **Neurons** | 11,000 (GPU) / 5,500 (CPU fallback) |
+| **Voice Samples** | 29 enrolled |
+| **Voice Threshold** | 0.40 |
+| **Main PC** | 192.168.0.230 |
+| **Backend Port** | 5000 |
+| **GPU Service Port** | 5001 |
 
-**1. Check ALL endpoints have `tools=TOOLS`:**
-- `/chat` endpoint (line ~11059) - main text chat
-- `/api/chat_stream` - streaming text
-- `/api/voice_to_voice_stream` (line ~11455) - voice conversations
-- `/api/chat_audio_stream` - audio chat
-
-**2. Check tool is registered in TOOLS list:**
-- TOOLS array starts at line ~3862 in app.py
-- Search for `"name": "your_tool_name"` to verify
-
-**3. Check tool execution handler exists:**
-- Search for `elif tool_name == "your_tool_name":` in execute_tool function
-- Starts around line ~7200
-
-**4. Check system prompt mentions the tool:**
-- get_system_prompt() function
-- Tool should be listed with clear usage instructions
-
-**5. Voice endpoint gotcha:**
-- Voice streaming only reads `stream.text_stream` - won't see tool_use blocks!
-- Must use NON-STREAMING API call to detect `stop_reason == "tool_use"`
-- Process tools in a loop until final text response
-
-**6. Model matters for tools:**
-- Haiku (`claude-3-5-haiku-20241022`) outputs tool names as TEXT like `[generate_image` - NOT real tool calls!
-- Sonnet (`claude-sonnet-4-20250514`) properly returns `stop_reason: tool_use`
-- **ALWAYS use Sonnet for endpoints that need tool execution**
-
-**Common issues:**
-- Tool works in /chat but not voice = check model (Haiku vs Sonnet) or missing `tools=TOOLS`
-- Voice says "generating" but nothing happens = model returning text instead of tool_use blocks
-
-### CONFIRMED FIX: Voice Endpoint Tool Execution (Dec 30, 2025)
-
-**Problem:** FRIDAI would say "I'm generating an image" via voice but nothing happened. Tools worked in /chat but not voice.
-
-**Root Cause:** Two issues combined:
-1. Voice endpoint used streaming API which only reads `text_stream` - ignores `tool_use` blocks
-2. Voice endpoint used Haiku model which outputs tool names as TEXT (e.g., `[generate_image`) instead of proper tool_use blocks
-
-**Solution Applied:**
-1. Changed `voice_to_voice_stream` from streaming to non-streaming:
-   ```python
-   # OLD (broken):
-   with anthropic_client.messages.stream(...) as stream:
-       for text_chunk in stream.text_stream:  # Never sees tool_use!
-
-   # NEW (working):
-   response = anthropic_client.messages.create(...)  # Non-streaming
-   while response.stop_reason == "tool_use":
-       # Execute tools, get next response
-   ```
-
-2. Changed model from Haiku to Sonnet:
-   ```python
-   # OLD: model = "claude-3-5-haiku-20241022"
-   model = "claude-sonnet-4-20250514"  # Proper tool support
-   ```
-
-**How to verify tools work:**
-- Check logs for: `[V2V] Response stop_reason: tool_use`
-- Check logs for: `[V2V] Executing tool: generate_image`
-- If you see `stop_reason: end_turn` with `content types: ['text']`, tools are NOT being called
+## All Git Repositories
+| Repo | URL | Branch |
+|------|-----|--------|
+| VoiceClaude (Backend) | github.com/realhavok2017-eng/FRIDAI | main |
+| FRIDAINative (Desktop) | github.com/realhavok2017-eng/FRIDAI-Desktop | master |
+| FRIDAI-Ally | github.com/realhavok2017-eng/FRIDAI-Ally | master |
+| FRIDAI-Comic | github.com/realhavok2017-eng/FRIDAI-Comic | main |
+| FridaiAndroid | github.com/realhavok2017-eng/FridaiAndroid | master |
 
 ---
 
-### Zombie Process Prevention (MAIN PC)
-1. Kill ALL Python: `powershell -Command "Stop-Process -Name python -Force"`
-2. Clear cache: `rm -rf C:/Users/Owner/VoiceClaude/__pycache__`
-3. Tool count: **175 tools**
+# SECTION 3: HOW TO START FRIDAI (MAIN PC)
 
-### Full Clean Restart Checklist - MAIN PC (After Major Surgery)
-Use this after making significant changes to FRIDAI code.
-**NOTE:** Backend runs on MAIN PC only - Ally is just a client.
-
-**Step 1: STOP EVERYTHING (on Main PC)**
+## THE ONLY WAY TO START FRIDAI:
 ```bash
-powershell -Command "Stop-Process -Name python -Force -ErrorAction SilentlyContinue"
-powershell -Command "Stop-Process -Name FRIDAI* -Force -ErrorAction SilentlyContinue"
+C:/Users/Owner/VoiceClaude/launch_all.bat
 ```
 
-**Step 2: CLEAR ALL CACHES (on Main PC)**
-```bash
-rm -rf C:/Users/Owner/VoiceClaude/__pycache__
-rm -rf C:/Users/Owner/VoiceClaude/consciousness/__pycache__
+**This script does EVERYTHING:**
+1. Kills any existing Python/FRIDAI processes
+2. Clears all Python caches
+3. Starts GPU Neural Service (11,000 neurons on CUDA) - Port 5001
+4. Waits and verifies GPU service is online
+5. Starts Backend (179 tools) - Port 5000
+6. Waits and verifies backend is online
+7. Starts Native App (FRIDAI.exe)
+
+**NEVER start components manually! Always use launch_all.bat**
+
+## What launch_all.bat Does Internally:
+```batch
+# 1. Kill old processes
+taskkill /f /im python.exe
+taskkill /f /im FRIDAI.exe
+
+# 2. Clear caches
+rmdir /s /q "C:\Users\Owner\VoiceClaude\__pycache__"
+rmdir /s /q "C:\Users\Owner\VoiceClaude\consciousness\__pycache__"
+rmdir /s /q "C:\Users\Owner\VoiceClaude\neural_gnn\__pycache__"
+
+# 3. Start GPU service (Python 3.12 for CUDA)
+start cmd /k "C:\Python312\python.exe neural_gnn\gpu_service.py"
+
+# 4. Start Backend (Python 3.14)
+start cmd /k "C:\Python314\python.exe -B app.py"
+
+# 5. Start Native App
+start "" "C:\Users\Owner\FRIDAINative\bin\Debug\net8.0-windows\FRIDAI.exe"
 ```
 
-**Step 3: REBUILD NATIVE APP** (if C# changes were made - on Main PC)
+## Verifying Everything Is Running:
 ```bash
-cd C:/Users/Owner/FRIDAINative && C:/Users/Owner/AppData/Local/Microsoft/dotnet/dotnet.exe build -c Debug
+# Check GPU service (should show 11,000 neurons)
+curl http://localhost:5001/health
+
+# Check Backend (should show 179 tools)
+curl http://localhost:5000/health
+
+# Check voice status
+curl http://localhost:5000/voice/status
 ```
 
-**Step 4: START BACKEND (on Main PC)**
-```bash
-powershell -Command "Start-Process -FilePath 'C:\Python314\python.exe' -ArgumentList '-B','app.py' -WorkingDirectory 'C:\Users\Owner\VoiceClaude'"
-```
+---
 
-**Step 5: VERIFY BACKEND** (wait ~10 seconds first)
-```bash
-curl http://192.168.0.230:5000/health
-```
-Should show **175 tools**
+# SECTION 4: ALLY SETUP (STEP BY STEP)
 
-**Step 6: START NATIVE APP (on Ally)**
-```bash
+## Prerequisites on Ally:
+- .NET 8 Runtime installed
+- Same network as Main PC (192.168.0.x)
+- Microphone access
+
+## First Time Setup:
+```powershell
+# 1. Create settings directory
+New-Item -ItemType Directory -Force -Path "$env:APPDATA\FRIDAI"
+
+# 2. Copy settings (or run INSTALL_SETTINGS.bat)
+Copy-Item ally_settings.json "$env:APPDATA\FRIDAI\settings.json"
+
+# 3. Run the app
 ./FRIDAI.exe
 ```
 
-**Verification:**
-- [ ] Backend responds on 192.168.0.230:5000
-- [ ] Tool count is 175
-- [ ] Native app connects and shows avatar
-- [ ] Avatar shows galaxy visual (warm golden core)
-- [ ] Voice input/output working
-
----
-
-## Ally-Specific Setup
-
-### First Time Setup
-```powershell
-# Create settings directory
-New-Item -ItemType Directory -Force -Path "$env:APPDATA\FRIDAI"
-
-# Copy settings (or run INSTALL_SETTINGS.bat)
-Copy-Item ally_settings.json "$env:APPDATA\FRIDAI\settings.json"
-```
-
-### Settings File Location
-`%APPDATA%\FRIDAI\settings.json`
-
-### Required Settings for Ally
+## Settings File (`%APPDATA%\FRIDAI\settings.json`):
 ```json
 {
   "BackendUrl": "http://192.168.0.230:5000",
@@ -175,258 +127,526 @@ Copy-Item ally_settings.json "$env:APPDATA\FRIDAI\settings.json"
 }
 ```
 
-### Health Check from Ally
+## Health Check from Ally:
 ```bash
 curl http://192.168.0.230:5000/health
 ```
 
 ---
 
-## Key Paths
+# SECTION 5: TODAY'S SESSION - COMPLETE BREAKDOWN (Jan 2, 2026)
 
-### Main PC (where backend runs)
-```
-Python:        C:\Python314\python.exe
-Backend:       C:/Users/Owner/VoiceClaude/app.py (175 tools)
-Tactical HUD:  C:/Users/Owner/VoiceClaude/tactical_hud.py
-Arc Model:     C:/Users/Owner/VoiceClaude/arc_raiders_yolo.pt
-Native App:    C:/Users/Owner/FRIDAINative/
-Avatar:        C:/Users/Owner/FRIDAINative/AvatarRenderer.cs
-Comic:         C:/Users/Owner/FRIDAI_COMIC/
-Generated Images: C:/Users/Owner/VoiceClaude/generated_images/
-```
+## Issue 1: Voice Enrollment Not Working
 
-### Ally (local only)
-```
-Settings:      %APPDATA%\FRIDAI\settings.json
-App:           [this folder]/FRIDAI.exe
-```
+### Problem:
+Voice enrollment samples weren't being collected when talking via voice. FRIDAI said "got 2 samples" but actually had 0.
 
----
+### Root Cause:
+The enrollment code was only in `/transcribe` endpoint, NOT in `voice_to_voice_stream` endpoint (which is what voice conversations use).
 
-## What Works from Ally
+### Fix Applied (`app.py` line ~12449):
+```python
+# Voice verification and enrollment
+try:
+    with tempfile.NamedTemporaryFile(suffix='.webm', delete=False) as f:
+        f.write(audio_bytes)
+        temp_audio_path = f.name
 
-**All 175 tools execute on Main PC:**
-- generate_image - Images saved on Main PC
-- open_url - Opens browser on Main PC
-- run_command - Runs on Main PC
-- tactical_hud - Displays on Main PC
-- browse_and_learn - FRIDAI watches videos on Main PC
-- volume/brightness - Controls Main PC
-- All file operations - Happen on Main PC
+    # Verify speaker if enrolled
+    if voice_recognition.is_boss_enrolled():
+        speaker_result = voice_recognition.verify_speaker(temp_audio_path)
+        current_speaker = {
+            "is_boss": speaker_result["is_boss"],
+            "confidence": speaker_result["confidence"],
+            "last_verified": datetime.now().isoformat()
+        }
+        if speaker_result["is_boss"]:
+            print(f"[V2V] Boss identified (confidence: {speaker_result['confidence']:.2f})")
+        else:
+            print(f"[V2V] Guest detected (confidence: {speaker_result['confidence']:.2f})")
 
-**Voice works fully:**
-- Same conversation history
-- Same memories/personality
-- Audio captured on Ally → processed on Main PC → response played on Ally
+    # Capture enrollment samples if active
+    if voice_recognition.is_enrollment_active():
+        enroll_result = voice_recognition.add_enrollment_sample(temp_audio_path)
+        print(f"[V2V] Enrollment sample: {enroll_result}")
 
-**Think of it as:** Talking to FRIDAI who is sitting at your Main PC.
-
----
-
-## Troubleshooting
-
-### Cannot Connect
-1. Ping: `ping 192.168.0.230`
-2. Check backend: `curl http://192.168.0.230:5000/health`
-3. Firewall on Main PC must allow port 5000 inbound
-4. Both devices on same network (192.168.0.x)
-
-### No Audio
-- Check Ally mic permissions
-- Try different `SelectedMicIndex` (0, 1, 2) in settings.json
-
-### Avatar Issues
-- Ensure .NET 8 runtime installed on Ally
-- Try running as administrator
-
----
-
-## Avatar Visual (Galaxy Theme - Dec 31, 2025)
-
-FRIDAI's avatar matches her self-image:
-- **Golden/orange warm core** (not cyan)
-- **Galaxy spiral arms** swirling inside
-- **Twinkling starfield**
-- **Purple nebula clouds**
-- **3 orbital energy rings** (gold, purple, cyan)
-- **Circuit patterns** on glass shell
-- **No plasma tendrils** (disabled for clean galaxy look)
-
----
-
-
-
----
-
-## IMPORTANT: What Runs Where
-
-### Main PC (192.168.0.230) - THE BRAIN
-- Python backend (app.py)
-- All 175 tools
-- Conversation history
-- FRIDAI's memories & personality
-- Image generation
-- All file operations
-- Must be ON for Ally to work
-
-### Ally - THIN CLIENT ONLY
-- **NO Python needed**
-- **NO backend needed**
-- Just FRIDAI.exe
-- Captures your voice
-- Sends to Main PC
-- Plays back response
-- Renders avatar locally
-
----
-
-## Auto-Start Setup
-
-### Enable Auto-Start (run once)
-```bash
-./INSTALL_AUTOSTART.bat
-```
-Creates shortcut in Windows Startup folder.
-
-### Disable Auto-Start
-```bash
-./REMOVE_AUTOSTART.bat
-```
-
-### Manual Start
-Just run `FRIDAI.exe`
-
----
-
-## REMOTE MANAGEMENT VIA SSH
-
-SSH is enabled on the Main PC. From the Ally, you can fully manage FRIDAI remotely.
-
-### SSH Connection
-```bash
-ssh Owner@192.168.0.230
-```
-Password: Your Windows login password
-
-### Remote Clean Restart (Full Process)
-Run these commands from Ally terminal:
-
-**Step 1: Stop everything**
-```bash
-ssh Owner@192.168.0.230 "powershell Stop-Process -Name python -Force"
-```
-
-**Step 2: Clear caches**
-```bash
-ssh Owner@192.168.0.230 "powershell Remove-Item -Recurse -Force C:/Users/Owner/VoiceClaude/__pycache__"
-```
-
-**Step 3: Start backend**
-```bash
-ssh Owner@192.168.0.230 "powershell Start-Process python -ArgumentList '-B app.py' -WorkingDirectory C:/Users/Owner/VoiceClaude"
-```
-
-**Step 4: Verify**
-```bash
-curl http://192.168.0.230:5000/health
-```
-
-### Quick Backend Restart (One Command)
-```bash
-ssh Owner@192.168.0.230 "powershell Stop-Process -Name python -Force; powershell Start-Process python -ArgumentList '-B app.py' -WorkingDirectory C:/Users/Owner/VoiceClaude"
-```
-
-### Check If Backend Is Running
-```bash
-curl http://192.168.0.230:5000/health
-```
-Should return tool_count: 175
-
----
-
-## Git Repo
-**https://github.com/realhavok2017-eng/FRIDAI-Ally**
-
-To update:
-```bash
-git pull
+    os.unlink(temp_audio_path)
+except Exception as voice_error:
+    print(f"[V2V] Voice verification error (non-fatal): {voice_error}")
 ```
 
 ---
 
-## Session History
+## Issue 2: AudioDecoder Not Defined Error
 
-### Jan 2, 2026 - Voice Enrollment + Game Modes (LATEST)
-
-**Voice Enrollment System - FULLY WORKING:**
-- Fixed voice enrollment (soundfile instead of broken torchaudio on Python 3.14)
-- Fixed voice verification in V2V endpoint (was missing entirely!)
-- 29 samples enrolled for Boss recognition
-- Threshold lowered to 0.40 (adjustable via `/voice/threshold` API)
-- Debug output added: `[VOICE] Similarity: X.XXXX, Threshold: 0.4, is_boss: True/False`
-
-**New Startup System - CRITICAL:**
-```bash
-# THE ONLY WAY TO START FRIDAI:
-C:/Users/Owner/VoiceClaude/launch_all.bat
+### Problem:
 ```
-This handles GPU service (11K neurons), backend (179 tools), and native app.
+[VOICE ENROLL] Error adding sample: name 'AudioDecoder' is not defined
+```
 
-**New Game Modes:**
-- `arkham_mode.py` - MCU FRIDAY-style combat coach for Batman Arkham games
-- `conscience_mode.py` - FiveM Deadpool-style inner voice for GTA RP
+### Root Cause:
+torchaudio is broken on Python 3.14 Windows - the torchcodec library can't load FFmpeg DLLs.
 
-**Bug Fixes:**
-- Fixed `datetime` shadowing error in `express_emotion` tool
-- Fixed `AudioDecoder` error (torchaudio broken on Python 3.14)
-- Fixed ConsciousnessStream showing 825 neurons (now shows 11,000 GPU)
-- Disabled auto GPU service start in app.py (launch_all.bat handles it)
+### Fix Applied (`voice_recognition.py`):
+Changed from letting pyannote use torchaudio to loading audio with soundfile:
 
-**Voice Recognition Status:**
+```python
+import soundfile as sf
+
+# Load with soundfile (avoids torchaudio issues on Python 3.14)
+audio_np, file_sr = sf.read(wav_path)
+print(f"[VOICE] Loaded audio: {len(audio_np)} samples at {file_sr}Hz")
+
+# Convert to float32 if needed
+if audio_np.dtype != np.float32:
+    audio_np = audio_np.astype(np.float32)
+
+# Resample to 16kHz if needed
+if file_sr != 16000:
+    ratio = file_sr / 16000
+    indices = np.arange(0, len(audio_np), ratio).astype(int)
+    audio_np = audio_np[indices]
+
+# Create waveform dict for pyannote
+waveform = torch.from_numpy(audio_np).unsqueeze(0)
+embedding = inference({"waveform": waveform, "sample_rate": 16000})
+```
+
+---
+
+## Issue 3: memoryview Object Has No Attribute 'cpu'
+
+### Problem:
+```
+[VOICE ENROLL] Error adding sample: 'memoryview' object has no attribute 'cpu'
+```
+
+### Root Cause:
+pyannote returns different types depending on input. The code assumed it always returned a tensor.
+
+### Fix Applied (`voice_recognition.py`):
+```python
+# Handle different return types from pyannote
+result = inference({"waveform": waveform, "sample_rate": sample_rate})
+
+if hasattr(result, 'data'):
+    if hasattr(result.data, 'cpu'):
+        embedding = result.data.cpu().numpy().flatten()
+    else:
+        embedding = np.array(result.data).flatten()
+elif hasattr(result, 'cpu'):
+    embedding = result.cpu().numpy().flatten()
+else:
+    embedding = np.array(result).flatten()
+```
+
+---
+
+## Issue 4: datetime Shadowing Error in express_emotion
+
+### Problem:
+```
+Error: cannot access local variable 'datetime' where it is not associated with a value
+```
+
+### Root Cause:
+Line 8915 in `app.py` had `from datetime import datetime` inside the `execute_tool` function. This caused Python to treat `datetime` as a local variable for the ENTIRE function, breaking line 6532 which used `datetime.now()`.
+
+### Fix Applied:
+Removed the redundant local import at line 8915:
+```python
+# BEFORE (broken):
+try:
+    from datetime import datetime  # <-- This shadows module-level datetime!
+    target_date = datetime.strptime(date_str, "%Y-%m-%d")
+
+# AFTER (fixed):
+try:
+    target_date = datetime.strptime(date_str, "%Y-%m-%d")  # Uses module-level datetime
+```
+
+Also removed redundant `import datetime` at line 11862 in `update_ui_state`.
+
+---
+
+## Issue 5: ConsciousnessStream Showing 825 Neurons Instead of 11,000
+
+### Problem:
+Backend terminal showed "825 digital neurons online" even though GPU service had 11,000.
+
+### Root Cause:
+Two hardcoded print statements:
+1. `consciousness_stream.py` line 187: `print("[ConsciousnessStream] Started - 825 digital neurons online")`
+2. `app.py` line 1010: `print("[FRIDAI] Consciousness stream started - 825 digital neurons online")`
+
+### Fix Applied:
+
+**consciousness_stream.py:**
+```python
+# Check actual neuron count from GPU service
+try:
+    import requests
+    resp = requests.get("http://localhost:5001/health", timeout=1)
+    if resp.status_code == 200:
+        neurons = resp.json().get("neurons", 11000)
+        print(f"[ConsciousnessStream] Started - {neurons:,} digital neurons online (GPU)")
+    else:
+        print("[ConsciousnessStream] Started - 5,500 digital neurons online (CPU)")
+except:
+    print("[ConsciousnessStream] Started - 5,500 digital neurons online (CPU)")
+```
+
+**app.py:**
+```python
+# Show actual neuron count from GPU
+neuron_msg = "11,000 neurons (GPU)" if GPU_NEURAL_AVAILABLE else "5,500 neurons (CPU)"
+print(f"[FRIDAI] Consciousness stream started - {neuron_msg}")
+```
+
+---
+
+## Issue 6: Two FRIDAI Instances Running
+
+### Problem:
+`launch_all.bat` would start GPU service, but `app.py` also had `ensure_gpu_neural_service()` which tried to start another one.
+
+### Fix Applied (`app.py` line 187-188):
+```python
+# BEFORE:
+ensure_gpu_neural_service()
+
+# AFTER:
+# GPU service is started by launch_all.bat - don't auto-start here
+# ensure_gpu_neural_service()
+```
+
+---
+
+## Issue 7: Voice Threshold Too High
+
+### Problem:
+Boss enrolled with 29 samples but verification showed "Guest detected (confidence: 0.44)" - threshold was 0.75.
+
+### Fix Applied:
+1. Lowered threshold minimum from 0.5 to 0.3 in `voice_recognition.py`
+2. Set threshold to 0.40 via API
+
+**voice_recognition.py:**
+```python
+# BEFORE:
+if not 0.5 <= threshold <= 0.95:
+
+# AFTER:
+if not 0.3 <= threshold <= 0.95:
+```
+
+**Set via API:**
+```bash
+curl -X POST http://localhost:5000/voice/threshold -H "Content-Type: application/json" -d '{"threshold": 0.40}'
+```
+
+---
+
+## Issue 8: Voice Verification Not Showing in Logs
+
+### Problem:
+V2V endpoint wasn't showing Boss/Guest identification in logs.
+
+### Root Cause:
+I only added enrollment collection, not the actual verification check.
+
+### Fix Applied:
+Added full verification to V2V endpoint (see Issue 1 fix above).
+
+---
+
+## New Feature: launch_all.bat
+
+Created comprehensive startup script that is now THE ONLY way to start FRIDAI.
+
+**Location:** `C:/Users/Owner/VoiceClaude/launch_all.bat`
+
+**Features:**
+- Kills zombie processes
+- Clears all caches
+- Starts GPU service (visible terminal)
+- Verifies GPU service is online
+- Starts backend (visible terminal)
+- Verifies backend is online
+- Starts native app
+- Shows status summary
+
+---
+
+## New Feature: Game Modes
+
+### Arkham Mode (`arkham_mode.py`)
+MCU FRIDAY-style tactical combat coach for Batman Arkham games.
+
+**Callouts include:**
+- "Counter opportunity detected."
+- "Unblockable attack incoming - evade."
+- "Shield bearer identified. Recommend cape stun."
+- "Multiple hostiles engaged. Combat mode active."
+- "All hostiles neutralized. Combat efficiency: {X}%."
+
+**Endpoints:**
+- `/api/arkham/start`
+- `/api/arkham/stop`
+- `/api/arkham/status`
+- `/api/arkham/mode` (combat/predator/exploration)
+
+### Conscience Mode (`conscience_mode.py`)
+FiveM Deadpool-style 4th wall breaking inner voice for GTA RP.
+
+**Features:**
+- Passive game audio listening
+- Screenshot-based context awareness
+- Snarky commentary
+- Public/private toggle for voice chat
+
+---
+
+# SECTION 6: VOICE RECOGNITION SYSTEM
+
+## Current Status:
 ```json
 {
   "boss_enrolled": true,
+  "enrollment_date": "2026-01-02T03:02:40.619810",
   "num_samples": 29,
   "similarity_threshold": 0.4,
   "guest_mode_enabled": true
 }
 ```
 
-**Current Tool Count:** 179
+## How It Works:
+1. Audio captured → saved as temp .webm file
+2. FFmpeg converts .webm to .wav (16kHz mono)
+3. soundfile loads the .wav (avoids torchaudio issues)
+4. pyannote extracts 512-dimensional embedding
+5. Cosine similarity compared against Boss profile
+6. If similarity >= threshold → Boss, else → Guest
 
-### Jan 1, 2026 - Cosmic Breath + Brain Transplant
-- 3D volumetric wave field for avatar
-- Volumetric nebula with 8 layers
-- Star breathing effect (1500 stars)
-- Brain transplant: Anthropic → Gemini 2.5
-- Phase 9 GPU Neural: 11,000 neurons on CUDA
+## Debug Output in Logs:
+```
+[VOICE] Converting ...webm to WAV...
+[VOICE] Converted to: ...wav
+[VOICE] Processing: ...wav
+[VOICE] Loaded audio: X samples at 16000Hz
+[VOICE] Embedding extracted (shape: (512,))
+[VOICE] Similarity: 0.XXXX, Threshold: 0.4, is_boss: True
+[V2V] Boss identified (confidence: 0.XX)
+```
 
-### Dec 31, 2025 - Multi-Machine + Galaxy Avatar
-- Added BackendUrl setting for remote connection
-- Galaxy visual overhaul to match FRIDAI's self-image
-- Firewall opened on Main PC (port 5000)
-- Created this Ally deployment package
+## API Endpoints:
+```bash
+# Check status
+curl http://localhost:5000/voice/status
 
-### Dec 30, 2025 - Voice Tool Fix
-- Fixed voice endpoint tool execution (Haiku→Sonnet, streaming→non-streaming)
-- Added open_url, browse_and_learn tools
+# Start enrollment
+curl -X POST http://localhost:5000/voice/enroll/start
+
+# Check enrollment progress
+curl http://localhost:5000/voice/enroll/status
+
+# Complete enrollment (after 20+ samples)
+curl -X POST http://localhost:5000/voice/enroll/complete
+
+# Set threshold
+curl -X POST http://localhost:5000/voice/threshold -H "Content-Type: application/json" -d '{"threshold": 0.40}'
+
+# Clear profile
+curl -X POST http://localhost:5000/voice/clear
+```
 
 ---
 
-## Quick Reference - Jan 2, 2026
+# SECTION 7: BRAIN ARCHITECTURE
 
-| Component | Value |
-|-----------|-------|
-| Tools | 179 |
-| LLM | Gemini 2.5 (Pro chat, Flash voice) |
-| Neurons | 11,000 (GPU) or 5,500 (CPU fallback) |
-| Voice Samples | 29 |
-| Voice Threshold | 0.40 |
-| Main PC | 192.168.0.230 |
-| Backend Port | 5000 |
-| GPU Service Port | 5001 |
+```
+┌─────────────────────────────────────────────────────────┐
+│                    GPU NEURAL SERVICE                    │
+│                (Python 3.12 + PyTorch CUDA)              │
+│  ┌─────────────────────────────────────────────────┐    │
+│  │ • 11,000 neurons (scaled 13x from original)     │    │
+│  │ • 4,241,000 connections                         │    │
+│  │ • 50 Hz tick rate                               │    │
+│  │ • Hebbian learning on GPU                       │    │
+│  │ • Port 5001                                     │    │
+│  └─────────────────────────────────────────────────┘    │
+└─────────────────────────────────────────────────────────┘
+                           │
+                           ▼
+┌─────────────────────────────────────────────────────────┐
+│                    FRIDAI BACKEND                        │
+│                    (Python 3.14)                         │
+│  ┌─────────────────────────────────────────────────┐    │
+│  │ • 179 tools                                     │    │
+│  │ • Gemini 2.5 Pro (chat) / Flash (voice)         │    │
+│  │ • Voice enrollment (pyannote + soundfile)       │    │
+│  │ • Consciousness stream                          │    │
+│  │ • Memory systems (semantic, episodic, etc.)     │    │
+│  │ • Port 5000                                     │    │
+│  └─────────────────────────────────────────────────┘    │
+└─────────────────────────────────────────────────────────┘
+                           │
+                           ▼
+┌─────────────────────────────────────────────────────────┐
+│                   NATIVE APP (.NET 8)                    │
+│  ┌─────────────────────────────────────────────────┐    │
+│  │ • Galaxy avatar (volumetric nebula, stars)      │    │
+│  │ • Audio capture/playback                        │    │
+│  │ • Remote connection support                     │    │
+│  │ • Tray icon menu                                │    │
+│  └─────────────────────────────────────────────────┘    │
+└─────────────────────────────────────────────────────────┘
+```
 
 ---
 
-*Main PC: 192.168.0.230 | Port: 5000 | Tools: 179 | Gemini 2.5 Flash | GPU Neural (11K neurons)*
+# SECTION 8: KEY FILE LOCATIONS (MAIN PC)
+
+```
+C:/Users/Owner/VoiceClaude/
+├── app.py                    # Main backend (179 tools)
+├── launch_all.bat            # THE startup script
+├── voice_recognition.py      # Voice enrollment/verification
+├── arkham_mode.py            # MCU FRIDAY combat coach
+├── conscience_mode.py        # FiveM Deadpool inner voice
+├── gemini_wrapper.py         # Anthropic-compatible Gemini interface
+├── consciousness/
+│   ├── consciousness_stream.py
+│   └── neural_substrate.py
+├── neural_gnn/
+│   ├── gpu_service.py        # GPU neural service
+│   └── gpu_client.py         # Client for main app
+└── voice_profiles/
+    ├── boss_profile.npy      # Boss voice embedding
+    └── voice_config.json     # Voice settings
+
+C:/Users/Owner/FRIDAINative/
+├── AvatarRenderer.cs         # Galaxy shader
+├── FRIDAIApp.cs              # Main app logic
+├── AudioHandler.cs           # Voice capture/playback
+├── Settings.cs               # Configuration
+└── FRIDAI_Ally/              # Ally deployment folder
+
+C:/Users/Owner/FRIDAI_COMIC/
+├── issues/                   # Comic markdown files
+├── artwork/                  # Image prompts
+└── SERIES_BIBLE.md           # Character/continuity guide
+```
+
+---
+
+# SECTION 9: SSH REMOTE MANAGEMENT
+
+From Ally terminal, you can manage Main PC:
+
+```bash
+# Connect
+ssh Owner@192.168.0.230
+
+# Quick restart backend
+ssh Owner@192.168.0.230 "cd C:/Users/Owner/VoiceClaude && ./launch_all.bat"
+
+# Check health
+curl http://192.168.0.230:5000/health
+curl http://192.168.0.230:5001/health
+
+# View backend logs (if started with visible terminal)
+# Just look at the cmd window on Main PC
+```
+
+---
+
+# SECTION 10: TOMORROW'S TASK - ANDROID APP
+
+## Current State:
+- Repository: github.com/realhavok2017-eng/FridaiAndroid
+- Multiple avatar rendering approaches tested
+- WebGL Three.js avatar (avatar.html)
+- Native OpenGL attempt (FridaiGLAvatar.kt)
+- Web-based avatar (FridaiWebAvatar.kt)
+
+## Tomorrow's Goal:
+Port the galaxy shader from FRIDAINative (AvatarRenderer.cs) to Android.
+
+**Options:**
+1. **OpenGL ES** - Port HLSL to GLSL, render in SurfaceView
+2. **WebGL** - Use Three.js in WebView (already started)
+3. **Jetpack Compose Canvas** - Simplified version
+
+**Key files to port:**
+- `AvatarRenderer.cs` → Galaxy shader logic
+- Need to convert HLSL to GLSL
+- Optimize for mobile GPU
+
+---
+
+# SECTION 11: TROUBLESHOOTING
+
+## Cannot Connect from Ally
+1. Ping Main PC: `ping 192.168.0.230`
+2. Check backend: `curl http://192.168.0.230:5000/health`
+3. Verify firewall allows port 5000 inbound on Main PC
+4. Both devices must be on same network (192.168.0.x)
+
+## Voice Shows "Guest" Even Though You're Boss
+- Check threshold: `curl http://localhost:5000/voice/status`
+- If confidence is close but below threshold, lower it:
+  ```bash
+  curl -X POST http://localhost:5000/voice/threshold -H "Content-Type: application/json" -d '{"threshold": 0.35}'
+  ```
+- Re-enroll if needed (better audio quality helps)
+
+## 825 Neurons Instead of 11,000
+- GPU service probably not running
+- Check: `curl http://localhost:5001/health`
+- Restart with `launch_all.bat`
+
+## Two FRIDAI Terminals Appear
+- Old version may have auto-started
+- Kill all: `taskkill /f /im python.exe && taskkill /f /im FRIDAI.exe`
+- Only use `launch_all.bat` to start
+
+## Voice Enrollment Fails
+- Check logs for specific error
+- Common: "AudioDecoder not defined" = torchaudio issue (should be fixed)
+- Ensure ffmpeg is in PATH (needed for webm→wav conversion)
+
+---
+
+# SECTION 12: SESSION HISTORY
+
+## Jan 2, 2026 (THIS SESSION)
+- Fixed voice enrollment (soundfile instead of torchaudio)
+- Fixed voice verification in V2V endpoint
+- Fixed datetime shadowing in express_emotion
+- Fixed neuron count display (825→11,000)
+- Created launch_all.bat startup system
+- Added arkham_mode.py (MCU FRIDAY)
+- Added conscience_mode.py (FiveM Deadpool)
+- Lowered voice threshold to 0.40
+- Pushed all repos to GitHub
+- Created FRIDAI-Comic repo
+
+## Jan 1, 2026
+- Cosmic Breath: 3D volumetric waves, nebula, breathing stars
+- Brain Transplant: Anthropic → Gemini 2.5
+- Phase 9: GPU Neural scaling to 11,000 neurons
+- Voice latency optimization (Gemini Flash)
+
+## Dec 31, 2025
+- Multi-machine support (BackendUrl setting)
+- Galaxy avatar visual overhaul
+- Created Ally deployment package
+
+## Dec 30, 2025
+- Fixed voice endpoint tool execution
+- Added browse_and_learn autonomous video watching
+
+---
+
+*Main PC: 192.168.0.230 | Backend: 5000 | GPU: 5001 | Tools: 179 | Gemini 2.5 | 11K Neurons*
