@@ -676,9 +676,10 @@ Port the galaxy shader from FRIDAINative (AvatarRenderer.cs) to Android.
   - Python scoping: local import ANYWHERE in function makes ALL refs local
 - Updated take_screenshot to use mss instead of PowerShell (captures fullscreen games)
 - Fixed conscience mode audio capture: was finding Stereo Mix (broken) instead of Voicemeeter Out B1 (works)
-- Fixed conscience TTS playback: ffplay fails with Voicemeeter ("audio open failed")
-  - Changed from ffplay to pygame.mixer for Voicemeeter compatibility
-  - Fallbacks: pygame -> pydub -> system player
+- Fixed conscience TTS playback: ffplay/pygame/pydub all fail with Voicemeeter
+  - Changed to sounddevice with explicit device selection
+  - Plays to wireless headset (or Realtek fallback)
+  - Converts MP3 to raw samples via pydub, plays with sd.play()
 
 ## Jan 1, 2026
 - Cosmic Breath: 3D volumetric waves, nebula, breathing stars
