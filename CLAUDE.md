@@ -1,6 +1,6 @@
 # FRIDAI Ally - Complete Project Context
 
-## LAST UPDATED: January 2, 2026 @ 7:15 PM (THIS SESSION)
+## LAST UPDATED: January 2, 2026 @ 7:45 PM (THIS SESSION)
 
 ---
 
@@ -649,9 +649,14 @@ Port the galaxy shader from FRIDAINative (AvatarRenderer.cs) to Android.
 
 ## Jan 2, 2026 (Evening)
 - Fixed phantom audio: VAD was processing 30s of silence even when no speech detected
-- Fixed mic index: Changed from Voicemeeter (2) to Yeti Classic (1)
 - Fixed VAD sleep cycling: Changed 200ms restart to 10 MINUTE dream intervals
 - FRIDAI now has 10 full minutes of dream time for autonomous processes
+- Added NAudio device enumeration debug output on startup (AudioHandler.cs)
+- Voicemeeter audio routing setup for FiveM Conscience Mode:
+  - SelectedMicIndex: 0 (Voicemeeter Out B1 - receives Yeti via B button routing)
+  - VADThreshold: 0.05 (lowered from 0.5 - Voicemeeter output levels are lower)
+  - OutputDeviceName: CABLE Input (for FiveM voice chat)
+- Wake word detection works through Voicemeeter, VAD threshold was too high
 
 ## Jan 1, 2026
 - Cosmic Breath: 3D volumetric waves, nebula, breathing stars
