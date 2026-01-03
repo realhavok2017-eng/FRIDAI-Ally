@@ -1,6 +1,6 @@
 # FRIDAI Ally - Complete Project Context
 
-## LAST UPDATED: January 2, 2026 @ 8:50 PM (THIS SESSION)
+## LAST UPDATED: January 3, 2026 @ 1:00 AM (THIS SESSION)
 
 ---
 
@@ -56,6 +56,7 @@
 | Component | Value |
 |-----------|-------|
 | **Tools** | 179 |
+| **Chat Window** | Ctrl+F8 or Tray Menu |
 | **LLM** | Gemini 2.5 (Pro=chat, Flash=voice) |
 | **Neurons** | 11,000 (GPU) / 5,500 (CPU fallback) |
 | **Voice Samples** | 29 enrolled |
@@ -709,6 +710,15 @@ Port the galaxy shader from FRIDAINative (AvatarRenderer.cs) to Android.
   - "Voicemeeter Input" is DIFFERENT from "Voicemeeter In 1" (numbered inputs)
   - Virtual Input strip needs A1 enabled to route to headphones
   - Windows default output should be Voicemeeter In 1 when using Voicemeeter
+
+## Jan 3, 2026
+- Added Chat Window feature to Native App:
+  - New ChatWindow.cs with inline image display
+  - Tray menu item and Ctrl+F8 hotkey
+  - Chat history API endpoints in backend
+  - Proactive message queue for FRIDAI-initiated messages
+  - Auto-queues generated images to chat window
+  - Notification badge when new messages arrive
 
 ## Jan 1, 2026
 - Cosmic Breath: 3D volumetric waves, nebula, breathing stars
