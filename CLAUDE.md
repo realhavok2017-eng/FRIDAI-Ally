@@ -32,6 +32,14 @@
 
 **File modifications while FRIDAI is running will fail or cause corruption.**
 
+## CRITICAL - FRESH RESTART PROCEDURE
+**When doing a fresh restart:**
+1. Close ALL stale FRIDAI terminal windows (GPU service, backend, etc.) - NOT Claude Code
+2. Kill all FRIDAI processes: 3. Close any leftover cmd windows from previous launches
+4. THEN run \ for a truly fresh start
+
+**Do NOT leave stale terminals piling up from repeated restarts.**
+
 ---
 
 ## FRIDAI's Identity
