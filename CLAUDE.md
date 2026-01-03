@@ -680,6 +680,8 @@ Port the galaxy shader from FRIDAINative (AvatarRenderer.cs) to Android.
   - Changed to sounddevice with explicit device selection
   - Outputs to 'Voicemeeter Input' (NOT 'Voicemeeter In 1' - they're different devices!)
   - Converts MP3 to raw samples via pydub, plays with sd.play()
+  - Voicemeeter setup: Virtual Input strip needs A1 enabled to route to headphones
+  - WORKING: Boss can now hear FRIDAI's conscience commentary
 
 ## Jan 1, 2026
 - Cosmic Breath: 3D volumetric waves, nebula, breathing stars
