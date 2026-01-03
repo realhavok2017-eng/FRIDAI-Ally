@@ -682,6 +682,11 @@ Port the galaxy shader from FRIDAINative (AvatarRenderer.cs) to Android.
   - Converts MP3 to raw samples via pydub, plays with sd.play()
   - Voicemeeter setup: Virtual Input strip needs A1 enabled to route to headphones
   - WORKING: Boss can now hear FRIDAI's conscience commentary
+- Conscience mode tuning:
+  - Cooldown: 15 minutes (900 seconds) to prevent overlap with conversations
+  - Response length: 3 sentences max
+  - Updated tool description: ONLY start when Boss explicitly asks, never proactively
+  - Conscience mode should NOT auto-start on launch
 
 ## Jan 1, 2026
 - Cosmic Breath: 3D volumetric waves, nebula, breathing stars
