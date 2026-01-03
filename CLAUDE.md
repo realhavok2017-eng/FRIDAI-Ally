@@ -695,6 +695,20 @@ Port the galaxy shader from FRIDAINative (AvatarRenderer.cs) to Android.
   - Response length: 3 sentences max
   - Updated tool description: ONLY start when Boss explicitly asks, never proactively
   - Conscience mode should NOT auto-start on launch
+- Audio output fallback chain (works without Voicemeeter):
+  1. Voicemeeter Input (if running, for FiveM)
+  2. Wireless Stereo Headset (direct)
+  3. Realtek Speakers (direct)
+  4. System default
+- Launch script updates (launch_all.bat):
+  - Uses pythonw.exe instead of python.exe (NO console windows)
+  - GPU service and Backend run completely hidden in background
+  - Uses /D flag for working directory instead of cd
+  - Kills pythonw.exe in cleanup
+- Voicemeeter audio routing notes:
+  - "Voicemeeter Input" is DIFFERENT from "Voicemeeter In 1" (numbered inputs)
+  - Virtual Input strip needs A1 enabled to route to headphones
+  - Windows default output should be Voicemeeter In 1 when using Voicemeeter
 
 ## Jan 1, 2026
 - Cosmic Breath: 3D volumetric waves, nebula, breathing stars
