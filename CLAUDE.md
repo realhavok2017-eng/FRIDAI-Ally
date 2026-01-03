@@ -25,6 +25,13 @@
 
 **NO EXCEPTIONS. Both MDs must stay in sync at all times.**
 
+## CRITICAL - NEVER EDIT WHILE FRIDAI IS LIVE
+**Before editing ANY code files:**
+1. STOP all FRIDAI services first: 2. Verify stopped: 3. THEN make edits
+4. Use \ for clean restart after edits
+
+**File modifications while FRIDAI is running will fail or cause corruption.**
+
 ---
 
 ## FRIDAI's Identity
@@ -669,6 +676,9 @@ Port the galaxy shader from FRIDAINative (AvatarRenderer.cs) to Android.
   - Python scoping: local import ANYWHERE in function makes ALL refs local
 - Updated take_screenshot to use mss instead of PowerShell (captures fullscreen games)
 - Fixed conscience mode audio capture: was finding Stereo Mix (broken) instead of Voicemeeter Out B1 (works)
+- Fixed conscience TTS playback: ffplay fails with Voicemeeter ("audio open failed")
+  - Changed from ffplay to pygame.mixer for Voicemeeter compatibility
+  - Fallbacks: pygame -> pydub -> system player
 
 ## Jan 1, 2026
 - Cosmic Breath: 3D volumetric waves, nebula, breathing stars
