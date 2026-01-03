@@ -678,7 +678,7 @@ Port the galaxy shader from FRIDAINative (AvatarRenderer.cs) to Android.
 - Fixed conscience mode audio capture: was finding Stereo Mix (broken) instead of Voicemeeter Out B1 (works)
 - Fixed conscience TTS playback: ffplay/pygame/pydub all fail with Voicemeeter
   - Changed to sounddevice with explicit device selection
-  - Plays to wireless headset (or Realtek fallback)
+  - Outputs to Voicemeeter In 1 (goes through Voicemeeter routing to headphones)
   - Converts MP3 to raw samples via pydub, plays with sd.play()
 
 ## Jan 1, 2026
