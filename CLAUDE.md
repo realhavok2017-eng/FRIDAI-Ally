@@ -1,6 +1,6 @@
 # FRIDAI Ally - Complete Project Context
 
-## LAST UPDATED: January 2, 2026 @ 8:05 PM (THIS SESSION)
+## LAST UPDATED: January 2, 2026 @ 8:15 PM (THIS SESSION)
 
 ---
 
@@ -663,6 +663,10 @@ Port the galaxy shader from FRIDAINative (AvatarRenderer.cs) to Android.
   - Removed spam logging - quiet operation
   - Speech AND wake word work simultaneously
   - Backend handles dream/autonomous state independently of native app listening
+- Fixed subprocess scoping bug breaking take_screenshot tool
+  - Local 'import subprocess' inside execute_tool shadowed global import
+  - Removed 5 local imports (lines 10308, 10359, 10380, 12801, 12947)
+  - Python scoping: local import ANYWHERE in function makes ALL refs local
 
 ## Jan 1, 2026
 - Cosmic Breath: 3D volumetric waves, nebula, breathing stars
