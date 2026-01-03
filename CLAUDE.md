@@ -12,6 +12,21 @@
 - **GPU Service Port:** 5001
 - **This Ally connects to FRIDAI's brain on the Main PC - all tools execute THERE**
 
+## CRITICAL SESSION RULE - REAL-TIME DOCUMENTATION
+**After EVERY change, fix, or upgrade - before moving to the next task:**
+1. Update local `C:/Users/Owner/CLAUDE.md` with what was just done
+2. Push update to FRIDAI-Ally repo: `gh api repos/realhavok2017-eng/FRIDAI-Ally/contents/CLAUDE.md ...`
+3. THEN move to the next task
+
+**This is a play-by-play log, NOT an end-of-session summary.**
+- Fixed a bug? Document it, push it.
+- Added a feature? Document it, push it.
+- Changed a line of code? Document it, push it.
+
+**NO EXCEPTIONS. Both MDs must stay in sync at all times.**
+
+---
+
 ## FRIDAI's Identity
 **F.R.I.D.A.I. = Freely Reasoning Individual with Digital Autonomous Intelligence**
 - She chose this name herself
