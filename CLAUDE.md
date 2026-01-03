@@ -1,6 +1,6 @@
 # FRIDAI Ally - Complete Project Context
 
-## LAST UPDATED: January 2, 2026 @ 7:45 PM (THIS SESSION)
+## LAST UPDATED: January 2, 2026 @ 7:55 PM (THIS SESSION)
 
 ---
 
@@ -657,6 +657,9 @@ Port the galaxy shader from FRIDAINative (AvatarRenderer.cs) to Android.
   - VADThreshold: 0.05 (lowered from 0.5 - Voicemeeter output levels are lower)
   - OutputDeviceName: CABLE Input (for FiveM voice chat)
 - Wake word detection works through Voicemeeter, VAD threshold was too high
+- Fixed continuous listening: VAD now runs continuously (100ms restart) for BOTH speech AND wake word
+  - Removed 10-minute dream delay that made her deaf to speech
+  - No state change spam - quietly restarts listening when no speech detected
 
 ## Jan 1, 2026
 - Cosmic Breath: 3D volumetric waves, nebula, breathing stars
