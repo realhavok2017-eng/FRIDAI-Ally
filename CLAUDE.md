@@ -1,6 +1,6 @@
 # FRIDAI Ally - Complete Project Context
 
-## LAST UPDATED: January 2, 2026 @ 7:10 PM (THIS SESSION)
+## LAST UPDATED: January 2, 2026 @ 7:15 PM (THIS SESSION)
 
 ---
 
@@ -650,8 +650,8 @@ Port the galaxy shader from FRIDAINative (AvatarRenderer.cs) to Android.
 ## Jan 2, 2026 (Evening)
 - Fixed phantom audio: VAD was processing 30s of silence even when no speech detected
 - Fixed mic index: Changed from Voicemeeter (2) to Yeti Classic (1)
-- Fixed VAD sleep cycling: Changed 200ms restart to 30s dream intervals
-- Now FRIDAI dreams in 30-second periods without constant state changes
+- Fixed VAD sleep cycling: Changed 200ms restart to 10 MINUTE dream intervals
+- FRIDAI now has 10 full minutes of dream time for autonomous processes
 
 ## Jan 1, 2026
 - Cosmic Breath: 3D volumetric waves, nebula, breathing stars
