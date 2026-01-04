@@ -1,6 +1,6 @@
 # FRIDAI Ally - Complete Project Context
 
-## LAST UPDATED: January 3, 2026 @ 1:00 AM (THIS SESSION)
+## LAST UPDATED: January 3, 2026 @ 3:30 AM (THIS SESSION)
 
 ---
 
@@ -64,6 +64,7 @@
 | **Main PC** | 192.168.0.230 |
 | **Backend Port** | 5000 |
 | **GPU Service Port** | 5001 |
+| **UDP Streaming Port** | 9999 |
 
 ## All Git Repositories
 | Repo | URL | Branch |
@@ -135,6 +136,7 @@ curl http://localhost:5000/voice/status
 - .NET 8 Runtime installed
 - Same network as Main PC (192.168.0.x)
 - Microphone access
+- FFmpeg installed (for UDP streaming video decode)
 
 ## First Time Setup:
 ```powershell
@@ -162,6 +164,78 @@ Copy-Item ally_settings.json "$env:APPDATA\FRIDAI\settings.json"
 ```bash
 curl http://192.168.0.230:5000/health
 ```
+
+---
+
+
+# SECTION 4.5: ALLY DEPLOYMENT FROM GIT (CLAUDE INSTRUCTIONS)
+
+## When on the Ally Machine, Follow These Steps:
+
+### Step 1: Clone or Pull FRIDAINative
+```powershell
+# If first time:
+cd C:\Users\Owner
+git clone https://github.com/realhavok2017-eng/FRIDAI-Desktop.git FRIDAINative
+
+# If already cloned:
+cd C:\Users\Owner\FRIDAINative
+git pull origin master
+```
+
+### Step 2: Build the Native App
+```powershell
+cd C:\Users\Owner\FRIDAINative
+dotnet restore
+dotnet build -c Debug
+```
+Build output will be in: `bin\Debug\net8.0-windows\`
+
+### Step 3: Install FFmpeg (Required for Video Decode)
+```powershell
+winget install Gyan.FFmpeg
+```
+Or manually add FFmpeg binaries to PATH.
+
+### Step 4: Configure Settings
+```powershell
+# Create settings directory if not exists
+New-Item -ItemType Directory -Force -Path "$env:APPDATA\FRIDAI"
+
+# Create settings file pointing to Main PC
+@"
+{
+  "BackendUrl": "http://192.168.0.230:5000",
+  "ContinuousListening": true,
+  "VADThreshold": 0.005,
+  "VADSilenceMs": 2500
+}
+"@ | Out-File -Encoding utf8 "$env:APPDATA\FRIDAI\settings.json"
+```
+
+### Step 5: Add Firewall Rule on Main PC (Run as Admin)
+On the MAIN PC (192.168.0.230), run in Admin PowerShell:
+```powershell
+netsh advfirewall firewall add rule name="FRIDAI Stream" dir=in action=allow protocol=UDP localport=9999
+```
+
+### Step 6: Run FRIDAI on Ally
+```powershell
+.\bin\Debug\net8.0-windows\FRIDAI.exe
+```
+
+### Step 7: Test UDP Streaming
+1. On Main PC: Right-click tray icon -> "Stream Host (UDP)"
+2. On Ally: Right-click tray icon -> "Stream Connect (UDP)"
+3. Enter IP: 192.168.0.230
+4. Remote desktop window should open
+
+## Verification Checklist
+- [ ] Can ping Main PC: `ping 192.168.0.230`
+- [ ] Backend health: `curl http://192.168.0.230:5000/health`
+- [ ] FFmpeg installed: `ffmpeg -version`
+- [ ] .NET 8 installed: `dotnet --version`
+- [ ] Settings file exists: `cat $env:APPDATA\FRIDAI\settings.json`
 
 ---
 
@@ -561,6 +635,16 @@ C:/Users/Owner/FRIDAINative/
 ├── FRIDAIApp.cs              # Main app logic
 ├── AudioHandler.cs           # Voice capture/playback
 ├── Settings.cs               # Configuration
+├── TrayIcon.cs               # Tray menu (includes streaming options)
+├── Streaming/                # Parsec-level UDP streaming
+│   ├── DxgiCapture.cs        # DXGI Desktop Duplication
+│   ├── NvencEncoder.cs       # H.264 NVENC encoding
+│   ├── UdpTransport.cs       # Custom UDP protocol
+│   ├── FecCodec.cs           # Forward Error Correction
+│   ├── AudioStreamer.cs      # Opus audio encoding
+│   ├── StreamHost.cs         # Host orchestrator
+│   ├── StreamClient.cs       # Client receiver/decoder
+│   └── StreamingWindow.cs    # Remote desktop UI
 └── FRIDAI_Ally/              # Ally deployment folder
 
 C:/Users/Owner/FRIDAI_COMIC/
@@ -616,7 +700,63 @@ Port the galaxy shader from FRIDAINative (AvatarRenderer.cs) to Android.
 
 ---
 
-# SECTION 11: TROUBLESHOOTING
+
+# SECTION 10: UDP STREAMING (PARSEC-LEVEL)
+
+## Overview
+Built-in Parsec-level remote desktop streaming using:
+- **DXGI Desktop Duplication** - GPU-side screen capture (<1ms latency)
+- **NVENC H.264** - Hardware video encoding on RTX 4060 Ti
+- **Custom UDP Protocol** - RTP-style packets with sequencing
+- **Forward Error Correction** - XOR-based FEC for packet loss recovery
+- **Opus Audio** - 48kHz stereo at 128kbps via WASAPI loopback
+
+## How to Use (Main PC as Host)
+1. Right-click FRIDAI tray icon
+2. Select "Stream Host (UDP)"
+3. Port 9999 starts listening
+4. Share your IP (192.168.0.230) with the client
+
+## How to Connect (Ally as Client)
+1. Right-click FRIDAI tray icon
+2. Select "Stream Connect (UDP)"
+3. Enter host IP: 192.168.0.230
+4. StreamingWindow opens with remote desktop
+
+## Technical Specs
+| Component | Spec |
+|-----------|------|
+| Video Codec | H.264 (NVENC) |
+| Video FPS | 60 |
+| Video Latency | <50ms target |
+| Audio Codec | Opus |
+| Audio Rate | 48kHz stereo |
+| Audio Bitrate | 128kbps |
+| Transport | UDP port 9999 |
+| FEC | XOR parity (1 repair per block) |
+| Fragmentation | 1200 byte MTU |
+
+## Firewall Setup
+On the Host (Main PC), allow UDP port 9999 inbound:
+```powershell
+netsh advfirewall firewall add rule name="FRIDAI Stream" dir=in action=allow protocol=UDP localport=9999
+```
+
+## Architecture
+```
+Host (Main PC):
+  DxgiCapture (GPU) -> NvencEncoder (NVENC) -> UdpTransport -> Network
+  AudioStreamer (WASAPI) -> Opus Encode --------^
+
+Client (Ally):
+  Network -> UdpTransport -> H.264 Decode -> StreamingWindow
+                          -> Opus Decode -> AudioPlayer
+  StreamingWindow -> Input Events -> UdpTransport -> Network -> Host
+```
+
+---
+
+# SECTION 12: TROUBLESHOOTING
 
 ## Cannot Connect from Ally
 1. Ping Main PC: `ping 192.168.0.230`
@@ -649,7 +789,7 @@ Port the galaxy shader from FRIDAINative (AvatarRenderer.cs) to Android.
 
 ---
 
-# SECTION 12: SESSION HISTORY
+# SECTION 13: SESSION HISTORY
 
 ## Jan 2, 2026 (THIS SESSION)
 - Fixed voice enrollment (soundfile instead of torchaudio)
@@ -711,7 +851,23 @@ Port the galaxy shader from FRIDAINative (AvatarRenderer.cs) to Android.
   - Virtual Input strip needs A1 enabled to route to headphones
   - Windows default output should be Voicemeeter In 1 when using Voicemeeter
 
-## Jan 3, 2026
+## Jan 3, 2026 (This Session - UDP Streaming)
+- Built Parsec-level UDP streaming infrastructure into FRIDAINative
+- Created complete Streaming/ folder with:
+  - DxgiCapture.cs - DXGI Desktop Duplication (GPU-side capture, <1ms)
+  - NvencEncoder.cs - H.264 hardware encoding via FFmpeg NVENC
+  - UdpTransport.cs - Custom UDP protocol with RTP-style packets
+  - FecCodec.cs - XOR-based Forward Error Correction
+  - AudioStreamer.cs - WASAPI loopback + Opus encoding/decoding
+  - StreamHost.cs - Host-side capture to encode to send pipeline
+  - StreamClient.cs - Client-side receive to decode to display
+  - StreamingWindow.cs - Windows Forms remote desktop UI
+- Added NuGet packages: Concentus (Opus), FFmpeg.AutoGen, Microsoft.VisualBasic
+- Added tray menu items: Stream Host (UDP) and Stream Connect (UDP)
+- Port 9999 UDP for streaming
+- Target: 60 FPS, <50ms latency, NVENC H.264, Opus audio
+
+## Jan 3, 2026 (Earlier - Chat Window)
 - Added Chat Window feature to Native App:
   - New ChatWindow.cs with inline image display
   - Tray menu item and Ctrl+F8 hotkey
