@@ -172,24 +172,17 @@ curl http://192.168.0.230:5000/health
 
 ## When on the Ally Machine, Follow These Steps:
 
-### Step 1: Clone or Pull FRIDAINative
+### Step 1: Clone or Pull FRIDAI-Ally (Pre-built Binaries)
 ```powershell
 # If first time:
 cd C:\Users\Owner
-git clone https://github.com/realhavok2017-eng/FRIDAI-Desktop.git FRIDAINative
+git clone https://github.com/realhavok2017-eng/FRIDAI-Ally.git FRIDAI-Ally
 
 # If already cloned:
-cd C:\Users\Owner\FRIDAINative
+cd C:\Users\Owner\FRIDAI-Ally
 git pull origin master
 ```
-
-### Step 2: Build the Native App
-```powershell
-cd C:\Users\Owner\FRIDAINative
-dotnet restore
-dotnet build -c Debug
-```
-Build output will be in: `bin\Debug\net8.0-windows\`
+**Note:** FRIDAI-Ally contains pre-built binaries - no build step needed!
 
 ### Step 3: Install FFmpeg (Required for Video Decode)
 ```powershell
@@ -221,7 +214,8 @@ netsh advfirewall firewall add rule name="FRIDAI Stream" dir=in action=allow pro
 
 ### Step 6: Run FRIDAI on Ally
 ```powershell
-.\bin\Debug\net8.0-windows\FRIDAI.exe
+cd C:\Users\Owner\FRIDAI-Ally
+.\FRIDAI.exe
 ```
 
 ### Step 7: Test UDP Streaming
