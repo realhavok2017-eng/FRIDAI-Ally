@@ -739,8 +739,9 @@ Built-in Parsec-level remote desktop streaming using:
 ## Firewall Setup
 On the Host (Main PC), allow UDP port 9999 inbound:
 ```powershell
-netsh advfirewall firewall add rule name="FRIDAI Stream" dir=in action=allow protocol=UDP localport=9999
+netsh advfirewall firewall add rule name=FRIDAIStream dir=in protocol=UDP localport=9999 action=allow
 ```
+**STATUS: DONE** - Rule 'FRIDAIStream' added Jan 3, 2026
 
 ## Architecture
 ```
