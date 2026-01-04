@@ -850,6 +850,7 @@ Client (Ally):
 - Built Parsec-level UDP streaming infrastructure into FRIDAINative
 - Fixed multi-monitor black screen: Added monitor enumeration, auto-selects primary monitor
 - Fixed audio crackling: Increased buffer 200ms->500ms, latency 50ms->100ms
+- Fixed large frame fragmentation: Expanded to 16-bit fragment indices (65535 max vs 255)
 - Created complete Streaming/ folder with:
   - DxgiCapture.cs - DXGI Desktop Duplication (GPU-side capture, <1ms)
   - NvencEncoder.cs - H.264 hardware encoding via FFmpeg NVENC
