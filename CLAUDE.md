@@ -1,6 +1,6 @@
 # FRIDAI Ally - Complete Project Context
 
-## LAST UPDATED: January 3, 2026 @ 3:30 AM (THIS SESSION)
+## LAST UPDATED: January 4, 2026 @ 2:00 AM
 
 ---
 
@@ -846,11 +846,41 @@ Client (Ally):
   - Virtual Input strip needs A1 enabled to route to headphones
   - Windows default output should be Voicemeeter In 1 when using Voicemeeter
 
+## Jan 4, 2026 (Streaming Black Screen Debug)
+- **Root Cause Found**: Client was receiving frames (`framesReceived=2991`) but decoder outputting nothing (`framesDecoded=0`)
+- **Fix 1 - Keyframe Detection in Fragments**:
+  - Large H.264 frames (IDR keyframes ~188KB) are fragmented into ~150+ UDP packets
+  - VideoFragment packets were losing the `isKeyframe` flag (always sent as `false`)
+  - Updated `OnPacketReceived` event signature to include `Flags` byte
+  - Host now sets `Flags=1` on all fragments of keyframe data
+  - Client reads `Flags` to correctly identify keyframe fragments for reassembly
+- **Fix 2 - FFmpeg Decoder Probesize**:
+  - Original `probesize=32` was too small - FFmpeg couldn't analyze H.264 stream headers
+  - Increased to `probesize=50000` to allow proper stream detection
+  - Also changed from `-s WxH` to `-vf scale=W:H` for proper scaling
+- **Fix 3 - Faster Keyframe Sync**:
+  - Reduced GOP from 60 frames (1 second) to 15 frames (~250ms)
+  - Clients connecting mid-stream get keyframe within 250ms instead of 1 second
+- **Debug Logging Added**:
+  - `[UdpTransport] Received packet from X.X.X.X, size=Y`
+  - `[StreamHost] Sending frame: X bytes, keyframe=Y`
+  - `[StreamClient] Got VideoFragment packet (keyframe=true/false)`
+  - `[StreamClient] Stats: Packets=X, FramesReceived=Y, FramesDecoded=Z`
+  - `[NvencEncoder] NAL type=X, size=Y, keyframe=Z`
+- **NAL Type Detection Working**: Confirmed IDR frames (type=5) correctly marked as keyframes
+- **Status**: Host correctly detecting and sending keyframes, client receiving packets - decoder output still being debugged
+- **Files Modified**:
+  - UdpTransport.cs - Added Flags to event, set Flags on keyframe fragments
+  - StreamClient.cs - Updated event handler, increased probesize
+  - StreamHost.cs - Added debug logging, fixed variable naming conflict
+  - NvencEncoder.cs - Reduced GOP, added NAL type debug logging
+
 ## Jan 3, 2026 (This Session - UDP Streaming)
 - Built Parsec-level UDP streaming infrastructure into FRIDAINative
 - Fixed multi-monitor black screen: Added monitor enumeration, auto-selects primary monitor
 - Fixed audio crackling: Increased buffer 200ms->500ms, latency 50ms->100ms
 - Fixed large frame fragmentation: Expanded to 16-bit fragment indices (65535 max vs 255)
+- **Fixed "Destination is too short" error**: FEC was incorrectly applied to whole H.264 frames (50KB+) instead of UDP fragments. Disabled FEC for now - streaming works fine without it.
 - Created complete Streaming/ folder with:
   - DxgiCapture.cs - DXGI Desktop Duplication (GPU-side capture, <1ms)
   - NvencEncoder.cs - H.264 hardware encoding via FFmpeg NVENC
