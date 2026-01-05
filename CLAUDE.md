@@ -1,16 +1,16 @@
-# FRIDAI Ally - Complete Project Context
+# FRIDAI - Complete Project Context
 
-## LAST UPDATED: January 4, 2026 @ 2:00 AM
+## LAST UPDATED: January 5, 2026 @ 2:15 AM
 
 ---
 
 # SECTION 1: CRITICAL INFO
 
-## THIS IS A REMOTE CLIENT
-- **Main PC IP:** 192.168.0.230
+## THIS IS THE MAIN PC
+- **IP Address:** 192.168.0.230
 - **Backend Port:** 5000
 - **GPU Service Port:** 5001
-- **This Ally connects to FRIDAI's brain on the Main PC - all tools execute THERE**
+- **This machine runs FRIDAI's brain - GPU neural service, backend, and native app**
 
 ## CRITICAL SESSION RULE - REAL-TIME DOCUMENTATION
 **After EVERY change, fix, or upgrade - before moving to the next task:**
@@ -39,6 +39,20 @@
 4. THEN run \ for a truly fresh start
 
 **Do NOT leave stale terminals piling up from repeated restarts.**
+
+## CRITICAL - PLATFORM-SPECIFIC AVATARS
+**Windows (Main PC + Ally) and Android have DIFFERENT avatar implementations:**
+
+| Platform | Avatar Style | Repo |
+|----------|-------------|------|
+| **Windows (Main + Ally)** | Current galaxy shader (AvatarRenderer.cs) | FRIDAINative / FRIDAI-Ally |
+| **Android (S23 Ultra)** | OpenGL ES 3.0 with TRUE 3D torus rings | FridaiAndroid |
+
+**Rules:**
+- **NEVER** push Android avatar changes to Windows repos (FRIDAI-Desktop, FRIDAI-Ally)
+- **NEVER** push Windows avatar changes to FridaiAndroid
+- Each platform's avatar is independent and should evolve separately
+- Android has gyroscope parallax + 3D torus rings, Windows has its own distinct look
 
 ---
 
@@ -846,6 +860,132 @@ Client (Ally):
   - Virtual Input strip needs A1 enabled to route to headphones
   - Windows default output should be Voicemeeter In 1 when using Voicemeeter
 
+## Jan 4, 2026 (Android Avatar Port)
+- Started FRIDAI manually (launch_all.bat wasn't working from script - services need visible terminals)
+- Started GPU service and backend as background processes
+- Verified all services green: GPU 11,000 neurons, Backend 179 tools
+- **Created Android Galaxy Avatar Porting Package:**
+  - `AVATAR_PORTING_GUIDE.md` - Complete documentation for porting (1393 lines of DirectX 11 → OpenGL ES 3.1)
+  - GLSL ES shaders in `app/src/main/assets/shaders/`:
+    - `wave_compute.glsl` - 2D wave simulation compute shader
+    - `star_vert.glsl` / `star_frag.glsl` - Billboarded 3D stars with twinkle
+    - `galaxy_vert.glsl` / `galaxy_frag.glsl` - Galaxy disc with wave displacement
+    - `ring_vert.glsl` / `ring_frag.glsl` - Orbital rings
+    - `nebula_frag.glsl` - Ray-marched volumetric nebula (most complex)
+  - `GalaxyRenderer.kt` - OpenGL ES 3.1 renderer skeleton (500+ lines)
+- Pushed all files to FridaiAndroid repo (github.com/realhavok2017-eng/FridaiAndroid)
+- Updated `DEVELOPMENT_CONTEXT.md` with avatar porting instructions
+- **Key HLSL→GLSL conversions documented:**
+  - `float4` → `vec4`, `mul(v,m)` → `m*v`, `saturate` → `clamp`
+  - `RWTexture2D` → `image2D`, `SV_DispatchThreadID` → `gl_GlobalInvocationID`
+- **Mobile optimizations recommended:**
+  - Stars: 1500→500, March steps: 48→24, Wave volume: 32³→16³
+  - FBM octaves: 6→4, Pre-subdivide meshes instead of tessellation
+
+## Jan 5, 2026 (Android Avatar - Final 3D Core + Rings) - CURRENT SESSION
+- **Added platform-specific avatar rules to CRITICAL section**
+- **Implemented shader-based "fake 3D" sphere (FAILED - didn't match ring parallax)**
+- **Final solution: TRUE 3D sphere geometry with same transforms as rings:**
+  - Uses actual sphere mesh (24x24 UV sphere from initSphere())
+  - Same MVP matrix transforms as rings:
+    - Matrix.rotateM(32f + tiltY * 8f, 1f, 0f, 0f)
+    - Matrix.rotateM(10f + tiltX * 8f, 0f, 0f, 1f)
+  - Sphere and rings now move together perfectly when tilting phone
+  - **Final scale: 0.28** (fills center, overlaps inner rings slightly)
+- **Core shader (CORE_FRAGMENT):**
+  - Fresnel rim lighting for 3D pop
+  - High contrast gradient: bright yellow center → orange → deep orange → dark rim
+  - Surface turbulence noise
+  - Specular highlight
+- **Subtle lens flare (FLARE_FRAGMENT):**
+  - Anamorphic horizontal streak with chromatic aberration
+  - Subtle halo glow
+  - Center cutout (doesn't draw over core)
+- **Removed problematic outer glow** that was causing big circle artifact
+- **Files modified:** GalaxyRenderer.kt (drawCore, CORE_VERTEX, CORE_FRAGMENT, FLARE_FRAGMENT)
+
+### Previous Session (3D Torus Rings):
+- **Converted flat rings to TRUE 3D torus geometry:**
+  - Each ring is now a tube with circular cross-section
+  - 64 segments around main circle, 12 segments around tube
+  - majorRadius=1.0, minorRadius=0.03 (thin tubes)
+  - Proper indexed triangle drawing (glDrawElements)
+- **Added new buffers to GalaxyRenderer.kt:**
+  - `ringNormals: FloatBuffer` - surface normals for lighting
+  - `ringTexCoords: FloatBuffer` - UV coords for wave effects
+  - `ringIndices: ShortBuffer` - triangle indices
+  - `ringIndexCount: Int` - index count for drawing
+- **Updated initRings() with torus math:**
+  - x = (R + r*cos(phi)) * cos(theta)
+  - y = r * sin(phi)
+  - z = (R + r*cos(phi)) * sin(theta)
+  - Normals point outward from tube surface
+- **Updated drawRings() for indexed drawing:**
+  - Binds aNormal and aTexCoord attributes
+  - Uses glDrawElements(GL_TRIANGLES, ringIndexCount, GL_UNSIGNED_SHORT, ringIndices)
+- **Updated RING_VERTEX shader:**
+  - Added `in vec3 aNormal` and `in vec2 aTexCoord`
+  - Waves displace along normal (not just Y)
+  - Added lighting calculation: `vLighting = max(dot(norm, lightDir), 0.0) * 0.5 + 0.5`
+- **Updated RING_FRAGMENT shader:**
+  - Uses `vLighting` for 3D shading
+  - Added `tubeFade` for tube cross-section shading (darker at edges)
+- **Fixed Android Studio file conflicts:**
+  - Killed lingering java.exe (Gradle daemon) process
+  - Used Python scripts to make file edits (bypassed Edit tool race condition)
+- **Built and deployed to S23 Ultra** - Rings now have visible 3D depth!
+
+## Jan 4, 2026 (Android Avatar - Fresh Rebuild)
+- **Previous code was wiped** - Starting fresh from scratch
+- **Created complete Android project structure:**
+  - settings.gradle.kts, build.gradle.kts, gradle.properties
+  - app/build.gradle.kts with SDK 26-34, Kotlin 1.9.20
+  - AndroidManifest.xml, themes.xml, strings.xml
+  - Adaptive launcher icons (galaxy core + ring design)
+- **Created GalaxyAvatarView.kt:**
+  - GLSurfaceView with OpenGL ES 3.0
+  - 8-bit RGBA, 24-bit depth
+  - Continuous render mode for animation
+  - Audio level and expression state support
+- **Created GalaxyRenderer.kt (complete inline shaders):**
+  - 500 stars with spherical distribution, twinkle effect
+  - Galaxy core with orange/yellow gradient, breathing effect
+  - 5 orbital rings (scales 0.15-0.41), wave displacement
+  - Nebula with FBM noise, domain warping, purple/magenta colors
+  - Render order: Stars -> Core -> Rings -> Nebula
+  - Audio-reactive effects on all elements
+- **Shaders (embedded in GalaxyRenderer.kt):**
+  - STAR: Point sprites with twinkle, audio-reactive size
+  - CORE: Radial gradient orange->yellow, breathing animation
+  - RING: Wave displacement, hot pink color, glow variation
+  - NEBULA: Simplex noise FBM, domain warping, purple gas clouds
+- **Files created:**
+  - app/src/main/java/com/fridai/app/MainActivity.kt
+  - app/src/main/java/com/fridai/app/avatar/GalaxyAvatarView.kt
+  - app/src/main/java/com/fridai/app/avatar/GalaxyRenderer.kt
+  - Plus all project config files and resources
+- **Added 3D Parallax with Gyroscope/Accelerometer:**
+  - GalaxyAvatarView now implements SensorEventListener
+  - Gyroscope integration with position drift-back
+  - Accelerometer fallback for devices without gyro
+  - Smooth interpolation on tilt values
+  - setTilt() method passes values to renderer
+- **Enhanced Star Field:**
+  - Increased to 1500 stars (from 500)
+  - 4 depth layers for parallax (near stars move more, far less)
+  - Depth-based size (near=bigger, far=smaller)
+  - Color variation: warm near, cool distant, red giants, blue stars
+  - Extra parallax offset in vertex shader per depth layer
+- **Camera parallax:**
+  - Camera position moves with tilt (camX/camY offset)
+  - Look target slightly offset for natural feel
+  - Stars also rotate with tilt (double parallax)
+- **All elements respond to tilt:**
+  - Core: slight position offset
+  - Rings: rotation adjusts with tilt
+  - Nebula: UV offset for parallax
+- **Deployed and tested on S23 Ultra** - Working!
+
 ## Jan 4, 2026 (Streaming Black Screen Debug)
 - **Root Cause Found**: Client was receiving frames (`framesReceived=2991`) but decoder outputting nothing (`framesDecoded=0`)
 - **Fix 1 - Keyframe Detection in Fragments**:
@@ -922,3 +1062,101 @@ Client (Ally):
 ---
 
 *Main PC: 192.168.0.230 | Backend: 5000 | GPU: 5001 | Tools: 179 | Gemini 2.5 | 11K Neurons*
+
+# SECTION 14: STRANGE ADVENTURES SECURITY TESTING (Jan 5, 2026)
+
+## Overview
+Joe (Boss) needed to security test his company's POS system (strangeadv.com / nadaPOS) to show his business partner the vulnerabilities and get them fixed.
+
+## Target System
+- **Website:** https://www.strangeadv.com (React SPA on Vercel)
+- **API Backend:** https://web-production-ce6d.up.railway.app (Node.js on Railway)
+- **Shop ID:** `cff34b78-d2ae-40e5-a429-302c625229a5`
+- **POS System:** nadaPOS (custom built by partner)
+
+## Locations Found
+| Location | ID | Address |
+|----------|-----|---------|
+| **Tempe** (Main) | `750e4f2d-3d42-4bfc-b72a-5fc4bc17e518` | 2000 E. Rio Salado Pkwy, STE 1234, Tempe, AZ |
+| **Cafe** (Rocketfuel) | `11fa80d6-bce3-4ab7-adb3-30b127f4f952` | Same address |
+
+## Critical Vulnerabilities Found
+
+### 1. NO RATE LIMITING ON PIN LOGIN (CRITICAL)
+- Endpoint: POST /api/auth/login-pin
+- 4-digit PIN = 10,000 combinations
+- Can brute force ALL PINs in ~3 minutes
+- No lockout, no alerts, no detection
+
+### 2. PASSWORD HASHES EXPOSED IN API (CRITICAL)
+- GET /api/customers returns bcrypt password hashes
+- Attackers can crack offline and do credential stuffing
+
+### 3. BULK DATA EXPORT (HIGH)
+- 1,405 customers (names, emails, phones, password hashes)
+- 7,819 sales (transaction history, Square payment IDs)
+- 8 staff (personal emails exposed)
+- Any authenticated user can paginate through ALL data
+
+### 4. CORS MISCONFIGURATION (MEDIUM)
+- Returns Access-Control-Allow-Origin: *
+- Any website can make authenticated requests
+
+## Staff Exposed (8 people)
+- Andrew Lanni - andrewdlanni@gmail.com - Staff + Inventory
+- Bailey Overby - bailey@strangeadv.com - Admin
+- Col Stephens - col.k.stephens@gmail.com - Manager
+- Joe Furman - joe@strangeadv.com - Admin
+- Kori X - kori@strangeadv.com - Admin
+- Suhaani Pandya - suhaani.rp@gmail.com - Staff
+- Test Cashier - cashier@strangeadv.com - Staff
+- Will Milligan - magpi73@icloud.com - Staff
+
+## Security Testing Repo
+**GitHub:** github.com/realhavok2017-eng/StrangeAdv-Security (private)
+
+### Tools:
+- pin_cracker.py - Brute force PIN authentication
+- websec_scanner.py - Full security scan
+- pos_breaker.py - Credential brute force
+- live_breach_demo.py - Data exposure demo
+- cors_attack_poc.html - Browser CORS exploit
+
+### Fix Files (in fixes/ folder):
+- security-middleware.js - Rate limiting middleware (drop-in)
+- api-fixes.js - Remove password hashes, add role limits
+- IMPLEMENTATION_GUIDE.md - Step-by-step instructions
+- QUICK_SUMMARY.txt - One-page summary
+- SECURITY_REPORT_STRANGEADV.md - Full vulnerability report
+
+## The 15-Minute Fix (CRITICAL)
+```javascript
+npm install express-rate-limit
+
+const rateLimit = require('express-rate-limit');
+app.use('/api/auth/login-pin', rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5
+}));
+```
+
+## How to Demo at Store
+1. Pull repo: git clone https://github.com/realhavok2017-eng/StrangeAdv-Security.git
+2. Install: pip install requests urllib3
+3. Run PIN cracker: python pin_cracker.py
+4. Show data exposure with curl commands
+5. Show the fix files
+
+## Key Endpoints
+- POST /api/auth/login-pin (no auth) - Returns JWT token
+- GET /api/customers (token) - 1,405 customers + password hashes
+- GET /api/sales (token) - 7,819 transactions
+- GET /api/staff (token) - 8 staff members
+- GET /api/locations (token) - 2 locations
+
+## Reminder When at Store
+1. Show partner SECURITY_REPORT_STRANGEADV.md
+2. Demo PIN cracker live
+3. Show curl commands to dump data
+4. Explain fix is simple (15 min critical, 1-2 hrs full)
+5. GET RATE LIMITING DEPLOYED TODAY
