@@ -1,6 +1,6 @@
 # FRIDAI - Complete Project Context
 
-## LAST UPDATED: January 5, 2026 @ 8:00 PM
+## LAST UPDATED: January 6, 2026 @ 1:00 AM
 
 ---
 
@@ -800,6 +800,55 @@ Client (Ally):
 
 # SECTION 13: SESSION HISTORY
 
+## Jan 6, 2026 (Android Avatar - Matrix Code Rain) - CURRENT SESSION
+- **Matrix Code Rain with Font Texture:**
+  - Created `code_font.png` - 256x256 texture atlas with 64 characters (8x8 grid)
+  - Characters: 0-9, A-Z, symbols (+,-,*,:,=,<,>,etc)
+  - Green characters on transparent background
+  - Location: `app/src/main/assets/code_font.png`
+
+- **Font Texture Loading in Renderer:**
+  - Added `loadFontTexture()` function to GalaxyRenderer.kt
+  - Loads texture from assets, uploads to GPU
+  - GL_NEAREST filtering for crisp pixels
+  - Added `fontTextureId` variable
+
+- **Nebula Code Rain (Initial Implementation):**
+  - Updated `codeRainVolume()` in NEBULA_FRAGMENT shader
+  - Samples characters from font texture atlas
+  - Character flicker at 6x/second for Matrix effect
+  - Stream trails with bright white head, fading green tail
+  - 3 depth layers with parallax
+
+- **Ring Code Rain with Water Surface:**
+  - Applied font texture to ring shader
+  - Characters flow around rings toward center
+  - Water-like effects:
+    - Multi-layer wave simulation (large swells + ripples)
+    - Specular highlights (shiny water surface)
+    - Caustic light patterns
+    - Fresnel rim reflection
+    - Depth-based water coloring
+
+- **Absorption Effect:**
+  - Inner rings fade (characters dissolve approaching core)
+  - Flow speed increases toward center
+  - Turbulence-based dissolve mask
+
+- **Solid Energy Core:**
+  - White-hot center gradient
+  - Energy absorption pulses flowing in
+  - Plasma turbulence patterns
+  - Hot spots where code energy is absorbed
+  - Fully opaque solid appearance
+
+- **Files Modified:**
+  - `GalaxyRenderer.kt` - Font texture loading, updated CORE_FRAGMENT, RING_FRAGMENT, NEBULA_FRAGMENT
+  - `code_font.png` - New font texture asset
+
+- **Pushed to GitHub:** Commit 4b253cd "Matrix code rain with font texture + water surface rings"
+
+
 ## Jan 2, 2026 (THIS SESSION)
 - Fixed voice enrollment (soundfile instead of torchaudio)
 - Fixed voice verification in V2V endpoint
@@ -882,7 +931,7 @@ Client (Ally):
   - Stars: 1500→500, March steps: 48→24, Wave volume: 32³→16³
   - FBM octaves: 6→4, Pre-subdivide meshes instead of tessellation
 
-## Jan 5, 2026 (Backend Fixes + Android Avatar) - CURRENT SESSION
+## Jan 5, 2026 (Backend Fixes + Android Avatar)
 
 
 ### Meshy.ai 3D Generation & Blender Integration (Night):
