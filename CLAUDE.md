@@ -1,6 +1,6 @@
 # FRIDAI - Complete Project Context
 
-## LAST UPDATED: January 5, 2026 @ 7:30 PM
+## LAST UPDATED: January 5, 2026 @ 8:00 PM
 
 ---
 
@@ -883,6 +883,37 @@ Client (Ally):
   - FBM octaves: 6→4, Pre-subdivide meshes instead of tessellation
 
 ## Jan 5, 2026 (Backend Fixes + Android Avatar) - CURRENT SESSION
+
+
+### Meshy.ai 3D Generation & Blender Integration (Night):
+- **Added Meshy.ai 3D generation tools (3 new tools, 182 total):**
+  - `image_to_3d` - Convert image URL to 3D model
+  - `text_to_3d` - Generate 3D from text prompt
+  - `get_my_3d_models` - List generated models
+  - API Key: MESHY_API_KEY in .env
+  - Endpoints fixed: /openapi/v2/ (not /v2/), added mode="preview"
+
+- **Auto-download GLB to folder:**
+  - Models download to `VoiceClaude/generated_3d_models/`
+  - Named: `{prompt}_{task_id}.glb`
+
+- **Blender Folder Watch Addon:**
+  - Location: `VoiceClaude/blender_addons/fridai_model_importer.py`
+  - Auto-imports GLB/FBX/OBJ/GLTF when new files appear
+  - FRIDAI tab in sidebar, auto-starts on Blender load
+  - Install: Edit → Preferences → Add-ons → Install
+
+- **Chat window selectable text:**
+  - Changed Label to RichTextBox for message display
+  - Can now select/copy text from chat
+
+- **Chat timeout increased:**
+  - 30 seconds → 300 seconds (5 min)
+  - Needed for 3D generation which takes 1-2 min
+
+- **Chat responses now speak aloud:**
+  - FRIDAI speaks her typed responses via TTS
+  - Both voice and text output simultaneously
 
 ### Backend & Native App Fixes (Evening):
 - **Fixed `/api/chat` 404 error:**
