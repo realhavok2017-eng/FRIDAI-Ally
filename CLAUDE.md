@@ -1,6 +1,6 @@
 # FRIDAI - Complete Project Context
 
-## LAST UPDATED: January 5, 2026 @ 7:00 PM
+## LAST UPDATED: January 5, 2026 @ 7:30 PM
 
 ---
 
@@ -1121,13 +1121,33 @@ FRIDAI now has 3D model generation capabilities via Meshy.ai API.
 4. Import to Blender for cleanup/rigging
 5. Export to FiveM format
 
+## Blender Integration
+
+**Addon Location:** VoiceClaude/blender_addons/fridai_model_importer.py
+
+### Installation:
+1. Blender → Edit → Preferences → Add-ons → Install
+2. Select fridai_model_importer.py
+3. Enable the addon
+
+### Features:
+- Auto-imports GLB/FBX/OBJ/GLTF from generated_3d_models folder
+- FRIDAI tab in sidebar (press N)
+- Auto-starts on Blender load
+- Selects and frames imported model
+
+### Workflow:
+1. Ask FRIDAI to generate 3D model
+2. Blender auto-imports it
+3. Edit/export for FiveM
+
 ## Example Usage
 Boss: "FRIDAI, make me a 3D model of a thick gold chain"
 FRIDAI uses text_to_3d with:
 - prompt: "thick gold chain with large links, hip hop style jewelry"
 - art_style: "realistic"
-- topology: "quad"
-Returns GLB/FBX/OBJ download links.
+- mode: "preview"
+Returns GLB/FBX/OBJ download links, saves to generated_3d_models/.
 
 ---
 
