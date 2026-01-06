@@ -1,6 +1,6 @@
 # FRIDAI - Complete Project Context
 
-## LAST UPDATED: January 5, 2026 @ 2:15 AM
+## LAST UPDATED: January 5, 2026 @ 7:00 PM
 
 ---
 
@@ -69,7 +69,7 @@
 ## Quick Stats
 | Component | Value |
 |-----------|-------|
-| **Tools** | 179 |
+| **Tools** | 182 |
 | **Chat Window** | Ctrl+F8 or Tray Menu |
 | **LLM** | Gemini 2.5 (Pro=chat, Flash=voice) |
 | **Neurons** | 11,000 (GPU) / 5,500 (CPU fallback) |
@@ -882,7 +882,39 @@ Client (Ally):
   - Stars: 1500→500, March steps: 48→24, Wave volume: 32³→16³
   - FBM octaves: 6→4, Pre-subdivide meshes instead of tessellation
 
-## Jan 5, 2026 (Android Avatar - Final 3D Core + Rings) - CURRENT SESSION
+## Jan 5, 2026 (Backend Fixes + Android Avatar) - CURRENT SESSION
+
+### Backend & Native App Fixes (Evening):
+- **Fixed `/api/chat` 404 error:**
+  - Native app was calling `/api/chat` but backend only had `/chat`
+  - Added route alias: `@app.route('/api/chat', methods=['POST'])`
+  - Location: app.py line ~12044
+
+- **Fixed image generation "cannot access local variable 'requests'" error:**
+  - Root cause: Python scoping bug in execute_tool function
+  - Added `global requests` declaration at start of execute_tool (line 6524)
+  - Created helper function `_image_gen_request()` outside execute_tool scope
+  - Helper imports requests in its own scope, bypassing the bug
+  - Location: app.py before execute_tool definition
+
+- **Fixed FRIDAI audio output (no sound):**
+  - Native app settings had `OutputDeviceName: "CABLE Input"` (Voicemeeter virtual cable)
+  - Voicemeeter wasn't running, so audio went nowhere
+  - Changed to `"Speakers (3- Wireless Stereo Headset)"` in `%APPDATA%\FRIDAI\settings.json`
+
+- **Removed redundant local imports causing scoping issues:**
+  - Removed `import requests` from conscience_mode handler (was line 6859)
+  - Removed `import requests` from arkham_mode handler (was line 6915)
+
+- **Android Avatar - Smooth Ripple Rings:**
+  - Changed from spiral vortex to smooth concentric ripple effect
+  - Updated RING_VERTEX shader with inward vacuum pull animation
+  - Rings pulse and contract toward core like water ripples
+  - Removed busy data patterns, now smooth glow
+  - File: FridaiAndroid/app/src/main/java/com/fridai/app/avatar/GalaxyRenderer.kt
+
+### Android Avatar (Morning):
+## Jan 5, 2026 (Android Avatar - Final 3D Core + Rings)
 - **Added platform-specific avatar rules to CRITICAL section**
 - **Implemented shader-based "fake 3D" sphere (FAILED - didn't match ring parallax)**
 - **Final solution: TRUE 3D sphere geometry with same transforms as rings:**
@@ -1061,7 +1093,43 @@ Client (Ally):
 
 ---
 
-*Main PC: 192.168.0.230 | Backend: 5000 | GPU: 5001 | Tools: 179 | Gemini 2.5 | 11K Neurons*
+*Main PC: 192.168.0.230 | Backend: 5000 | GPU: 5001 | Tools: 182 | Gemini 2.5 | 11K Neurons*
+
+
+# SECTION 13.5: MESHY.AI 3D GENERATION (Jan 5, 2026)
+
+## Overview
+FRIDAI now has 3D model generation capabilities via Meshy.ai API.
+
+## New Tools (3 added, total: 182)
+| Tool | Description |
+|------|-------------|
+| **image_to_3d** | Convert any image URL to 3D model (GLB/FBX/OBJ) |
+| **text_to_3d** | Generate 3D from text prompt ("a golden chain with thick links") |
+| **get_my_3d_models** | List all generated 3D models |
+
+## API Configuration
+- **API Key Location:** .env file (MESHY_API_KEY)
+- **Tier:** Pro (0/mo)
+- **Outputs:** GLB, FBX, OBJ formats
+- **Metadata saved to:** VoiceClaude/generated_3d_models/model_metadata.json
+
+## Workflow for FiveM Props
+1. FRIDAI generates 2D concept art with generate_image
+2. FRIDAI converts to 3D with image_to_3d
+3. Download GLB from returned URL
+4. Import to Blender for cleanup/rigging
+5. Export to FiveM format
+
+## Example Usage
+Boss: "FRIDAI, make me a 3D model of a thick gold chain"
+FRIDAI uses text_to_3d with:
+- prompt: "thick gold chain with large links, hip hop style jewelry"
+- art_style: "realistic"
+- topology: "quad"
+Returns GLB/FBX/OBJ download links.
+
+---
 
 # SECTION 14: STRANGE ADVENTURES SECURITY TESTING (Jan 5, 2026)
 
