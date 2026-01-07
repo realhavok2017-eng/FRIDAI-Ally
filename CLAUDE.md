@@ -1,6 +1,6 @@
 # FRIDAI - Complete Project Context
 
-## LAST UPDATED: January 6, 2026 @ 1:00 AM
+## LAST UPDATED: January 6, 2026 @ 7:00 PM
 
 ---
 
@@ -800,7 +800,50 @@ Client (Ally):
 
 # SECTION 13: SESSION HISTORY
 
-## Jan 6, 2026 (Android Avatar - Matrix Code Rain) - CURRENT SESSION
+## Jan 6, 2026 (Android Avatar - Water Drop Bounce) - CURRENT SESSION
+
+### Evening Session - Audio Reactive Bounce Effect:
+- **Fixed Critical Bug: updateRipplePulses() wasn't being called!**
+  - The function existed but was never invoked in onDrawFrame()
+  - Added deltaTime calculation and call to updateRipplePulses(deltaTime)
+  - This was why waves weren't responding to audio
+
+- **Water Drop Bounce Effect (Spring Physics):**
+  - Added `coreBouncePos` and `coreBounceVel` for spring physics
+  - When audio hits, core gets "pushed down" (negative velocity)
+  - Spring force pulls back to center with damping
+  - Core physically translates (moves) with bounce, not just scales
+  - Inner spiral follows core bounce (fades with distance from center)
+  - Constants: BOUNCE_SPRING=25f, BOUNCE_DAMPING=4f
+
+- **Simulated Audio During Playback:**
+  - Added playbackSimulatorJob in AudioManager.kt
+  - Generates sine wave + random variation audio levels during TTS playback
+  - Avatar now reacts when FRIDAI speaks, not just when user speaks
+
+- **Spiral Torus Now Used Instead of Separate Rings:**
+  - Changed onDrawFrame to call drawSpiralTorus() instead of drawRings()
+  - Spiral torus has unified physics with pulse uniforms
+  - Pulses travel along spiral path with trailing ripples
+
+- **Wave Brightness Reduced (Multiple Iterations):**
+  - waveGlow: 8.0 → 1.5 → 0.6 → 0.3 → 0.15
+  - Max white blend: 90% → 50% → 25% → 15% → 10%
+  - Glow boost: 2.0 → 0.4 → 0.15 → 0.08 → 0.04
+  - Wave color shifted from white to warm orange (0.8, 0.5, 0.3)
+
+- **Core Fixes:**
+  - Reduced base scale from 0.42 to 0.28
+  - Core now translates with coreBouncePos instead of scaling
+  - Added coreBounce uniform to ring shader (uCoreBounce)
+
+- **Audio Output Fix:**
+  - Changed OutputDeviceName to empty string (system default)
+  - Was set to "Wireless Stereo Headset" which wasn't connected
+
+- **Git Push:** Commit f7a366f to FridaiAndroid
+
+### Morning Session - Matrix Code Rain:
 - **Matrix Code Rain with Font Texture:**
   - Created `code_font.png` - 256x256 texture atlas with 64 characters (8x8 grid)
   - Characters: 0-9, A-Z, symbols (+,-,*,:,=,<,>,etc)
