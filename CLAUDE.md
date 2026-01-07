@@ -1,6 +1,6 @@
 # FRIDAI - Complete Project Context
 
-## LAST UPDATED: January 6, 2026 @ 7:00 PM
+## LAST UPDATED: January 6, 2026 @ 10:00 PM
 
 ---
 
@@ -842,6 +842,41 @@ Client (Ally):
   - Was set to "Wireless Stereo Headset" which wasn't connected
 
 - **Git Push:** Commit f7a366f to FridaiAndroid
+
+### Night Session - Audio Playback Fixes (Native App):
+- **Fixed Audio Output Device:**
+  - Set OutputDeviceName to "Wireless Stereo" in settings.json
+  - Device 0 is "Speakers (3- Wireless Stereo He" (truncated name)
+  - Empty string was using wrong default device
+
+- **Fixed launch_all.bat:**
+  - Added `cd /D "%~dp0"` at top to change to script directory
+  - Script now works when run from any location
+  - Displays working directory for verification
+
+- **Fixed Short Response Audio Not Playing:**
+  - Root cause: Streaming buffer threshold (16384 bytes) wasn't reached for short responses
+  - Playback only started when buffer > 16KB during streaming
+  - Short responses never hit threshold, audio was discarded
+  - **Fix:** Added fallback in FinishStreamingPlayback() - if streamingReader is null
+    but buffer has data, play it at finish time
+  - Now all responses play, regardless of length
+
+- **Added Debug Logging to AudioHandler.cs:**
+  - `[AUDIO] Chunk: X bytes` - when chunks received
+  - `[AUDIO] CreateWaveOut using device index X` - device selection
+  - `[AUDIO] Short response (X bytes) - playing now` - late playback trigger
+  - `[AUDIO] Late playback started!` - confirmation
+
+- **Files Modified:**
+  - AudioHandler.cs - Fixed FinishStreamingPlayback, added debug logging
+  - launch_all.bat - Added directory change
+  - settings.json - Set output device
+
+- **Brain Backup:**
+  - Created new repo: github.com/realhavok2017-eng/FRIDAI-Brain (private)
+  - Pushed 16 brain files including memories, cognitive state, voice profiles
+  - Also updated Google Drive backup at G:/My Drive/FRIDAI_Brain_Backup/latest/
 
 ### Morning Session - Matrix Code Rain:
 - **Matrix Code Rain with Font Texture:**
