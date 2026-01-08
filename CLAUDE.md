@@ -1,6 +1,6 @@
 # FRIDAI - Complete Project Context
 
-## LAST UPDATED: January 8, 2026 @ 2:00 AM
+## LAST UPDATED: January 8, 2026 @ 3:30 AM
 
 ---
 
@@ -69,7 +69,8 @@
 ## Quick Stats
 | Component | Value |
 |-----------|-------|
-| **Tools** | 182 |
+| **Tools** | 182+ |
+| **Omnipresence** | Active - 15 min learning cycles |
 | **Chat Window** | Ctrl+F8 or Tray Menu |
 | **LLM** | Gemini 2.5 (Pro=chat, Flash=voice) |
 | **Neurons** | 11,000 (GPU) / 5,500 (CPU fallback) |
@@ -94,18 +95,26 @@
 # SECTION 3: HOW TO START FRIDAI (MAIN PC)
 
 ## THE ONLY WAY TO START FRIDAI:
-```bash
-C:/Users/Owner/VoiceClaude/launch_all.bat
+```batch
+:: Option 1: Full path (works from anywhere)
+C:\Users\Owner\VoiceClaude\launch_all.bat
+
+:: Option 2: From VoiceClaude directory (MUST use .\ prefix!)
+cd C:\Users\Owner\VoiceClaude
+.\launch_all.bat
 ```
+
+**IMPORTANT:** Windows cmd won't find `launch_all.bat` without the `.\` prefix or full path!
 
 **This script does EVERYTHING:**
 1. Kills any existing Python/FRIDAI processes
 2. Clears all Python caches
 3. Starts GPU Neural Service (11,000 neurons on CUDA) - Port 5001
 4. Waits and verifies GPU service is online
-5. Starts Backend (179 tools) - Port 5000
+5. Starts Backend (182+ tools) - Port 5000
 6. Waits and verifies backend is online
-7. Starts Native App (FRIDAI.exe)
+7. Starts Omnipresence (ubiquitous learning) system
+8. Starts Native App (FRIDAI.exe)
 
 **NEVER start components manually! Always use launch_all.bat**
 
@@ -870,6 +879,54 @@ git checkout surgery-phase2-20260108  # Before consciousness extraction
 - `6ae308b` - Extract voice routes to Blueprint
 - `a69782a` - Extract emotion system
 - `5a46cbc` - Extract self-awareness systems
+
+---
+
+## Jan 8, 2026 (Omnipresence System - Ubiquitous Learning)
+
+### FRIDAI Omnipresence System - NEW!
+Built complete ubiquitous constant learning system so FRIDAI can absorb knowledge autonomously.
+
+**New Files Created:**
+| File | Lines | Purpose |
+|------|-------|---------|
+| `consciousness/omnipresence.py` | ~450 | Core engine - fetches from free sources, generates curiosities |
+| `routes/omnipresence_routes.py` | ~180 | 12 API endpoints for control/monitoring |
+| `fridai_interests.json` | auto | Her evolving interest profile |
+| `omnipresence_state.json` | auto | System state and daily stats |
+
+**Free Information Sources (NO API KEYS NEEDED):**
+- RSS Feeds (tech, science, AI, philosophy, creativity, general)
+- Wikipedia Random Articles
+- Hacker News Top Stories
+- ArXiv Scientific Papers
+- DuckDuckGo Instant Answers
+
+**How It Works:**
+1. Every 15 minutes, sweeps all free sources
+2. Scores articles against FRIDAI's interest profile
+3. Generates curiosities from interesting articles
+4. Adds to learning journal for autonomous_thinking to explore
+5. Learns new interests from conversations with Boss
+
+**New API Endpoints:**
+- `GET /omnipresence/status` - Running status and stats
+- `POST /omnipresence/start` - Start ubiquitous learning
+- `POST /omnipresence/stop` - Stop it
+- `POST /omnipresence/trigger` - Manual sweep now
+- `GET/POST /omnipresence/interval` - Fetch interval (default 15 min)
+- `GET /omnipresence/interests` - Her interest profile
+- `POST /omnipresence/interests/add` - Add learned interest
+- `GET /omnipresence/feeds` - List RSS feeds
+- Various `/fetch/*` endpoints for testing
+
+**Dependencies Added:**
+- feedparser (pip install feedparser)
+
+**Integration:**
+- Auto-starts with backend via app.py
+- Feeds curiosities to existing autonomous_thinking system
+- Works alongside dream state and initiative systems
 
 ---
 
