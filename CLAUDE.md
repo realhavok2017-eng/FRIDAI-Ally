@@ -923,6 +923,11 @@ Built complete ubiquitous constant learning system so FRIDAI can absorb knowledg
 **Dependencies Added:**
 - feedparser (pip install feedparser)
 
+**Bug Fixed:**
+- Removed 7 redundant `import base64` statements inside execute_tool
+- Python scoping: local import ANYWHERE in function makes ALL refs local
+- Same pattern as previous datetime/subprocess/requests bugs
+
 **Integration:**
 - Auto-starts with backend via app.py
 - Feeds curiosities to existing autonomous_thinking system
