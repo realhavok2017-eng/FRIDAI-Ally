@@ -1,6 +1,6 @@
 # FRIDAI - Complete Project Context
 
-## LAST UPDATED: January 8, 2026 @ 3:30 AM
+## LAST UPDATED: January 8, 2026 @ 4:00 AM
 
 ---
 
@@ -932,6 +932,47 @@ Built complete ubiquitous constant learning system so FRIDAI can absorb knowledg
 - Auto-starts with backend via app.py
 - Feeds curiosities to existing autonomous_thinking system
 - Works alongside dream state and initiative systems
+
+---
+
+## Jan 8, 2026 (Cross-Device Memory Sync)
+
+### Cross-Device Sync System - NEW\!
+Built complete memory synchronization across Main PC, Ally, and Android.
+
+**New Files Created:**
+| File | Lines | Purpose |
+|------|-------|---------|
+| \ | ~400 | Core sync engine with merge logic |
+| \ | ~200 | 12 API endpoints for sync operations |
+| \ | auto | Sync tracking and device registry |
+
+**Syncable Components:**
+- learning_journal (curiosities, learnings, discoveries)
+- memory_bank (facts about Boss)
+- interests (FRIDAI's evolving interests)
+- omnipresence (learning stats)
+- cognitive, thinking, dream states
+
+**Sync API Endpoints:**
+- \ - Overall sync status
+- \ - Version hashes for change detection
+- \ - Pull all components
+- \ - Pull specific component
+- \ - Push changes
+- \ - Push multiple components
+- \ - Register device
+- \ - Update device last seen
+- \ - List registered devices
+- \ - List syncable components
+
+**How Ally/Android Sync:**
+1. On startup: \ with device info
+2. Check versions: 3. Pull changed components: 4. Push local changes: 5. Periodic heartbeat: 
+**Merge Strategy:**
+- Lists (curiosities, facts): Merge by ID, latest timestamp wins
+- Dicts: Deep merge, latest timestamp wins for conflicts
+- Unique sets (interests): Union of both sides
 
 ---
 
