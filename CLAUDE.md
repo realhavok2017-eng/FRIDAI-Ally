@@ -1,6 +1,6 @@
 # FRIDAI - Complete Project Context
 
-## LAST UPDATED: January 11, 2026 @ 12:45 AM
+## LAST UPDATED: January 11, 2026 @ 2:30 AM
 
 ---
 
@@ -902,6 +902,48 @@ MODIFIED:
   continuous_vision.py    (experience stream)
   launch_all.bat          (timing fixes)
 ```
+
+---
+
+## Jan 11, 2026 (3D Avatar with GLB Model)
+
+### FRIDAI's Own 3D Avatar
+Started work on rendering FRIDAI's self-created 3D model as her avatar.
+
+**Model:** `C:\Users\Owner\VoiceClaude\generated_3d_models\img2model_019bac2a.glb`
+- Created by FRIDAI via Meshy.ai image-to-3D
+- Humanoid bust with ethereal appearance
+
+**New Files Created:**
+| File | Purpose |
+|------|---------|
+| `GltfModelLoader.cs` | SharpGLTF loader - parses GLB, creates GPU buffers |
+| `FridaiAvatarRenderer.cs` | Custom HLSL shader renderer |
+
+**Shader Features:**
+- Clean crystalline blue material
+- Intense 3-layer golden eye glow (outer → mid → white-hot core)
+- Blue rim lighting on edges
+- Fake subsurface scattering
+- Subtle breathing animation (no spinning)
+
+**Eye Position Tuning (WIP):**
+- Model bounds: X: -0.85 to 0.85, Y: -0.96 to 0.96, Z: -0.51 to 0.51
+- Eye Y iterations: 0.42 (cheeks) → 0.62 (forehead) → 0.52 (still high) → **0.48** (current)
+- Current eye coords: `float3(±0.13, 0.48, 0.38)` - still needs fine-tuning
+
+**Integration:**
+- FRIDAIApp.cs now uses FridaiAvatarRenderer instead of AvatarRenderer
+- SharpGLTF.Core NuGet package added
+
+**TODO Next Session:**
+- Test eye Y=0.48 and adjust if needed
+- Consider making eye positions configurable or auto-detected from mesh
+
+**Git Commits:**
+- **FRIDAINative:** `4e034b8` - Add FRIDAI 3D avatar renderer with GLB model support
+- **FRIDAINative:** `fb08415` - Adjust eye Y position from 0.52 to 0.48
+- **VoiceClaude:** `2a63a7f` - Session state + FRIDAI's 3D model GLBs
 
 ---
 
