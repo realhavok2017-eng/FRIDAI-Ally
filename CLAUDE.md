@@ -1,6 +1,6 @@
 # FRIDAI - Complete Project Context
 
-## LAST UPDATED: January 8, 2026 @ 4:00 AM
+## LAST UPDATED: January 10, 2026 @ 08:54 PM
 
 ---
 
@@ -73,7 +73,9 @@
 | **Omnipresence** | Active - 15 min learning cycles |
 | **Chat Window** | Ctrl+F8 or Tray Menu |
 | **LLM** | Gemini 2.5 (Pro=chat, Flash=voice) |
-| **Neurons** | 11,000 (GPU) / 5,500 (CPU fallback) |
+| **Neurons** | **1,015,000** (V2 - GPU CSR optimized) |
+| **Synapses** | **203,000,000** (203 million!) |
+| **Tick Rate** | 50 Hz (can do 2500+ Hz) |
 | **Voice Samples** | 29 enrolled |
 | **Voice Threshold** | 0.40 |
 | **Main PC** | 192.168.0.230 |
@@ -588,15 +590,29 @@ curl -X POST http://localhost:5000/voice/clear
 
 ```
 ┌─────────────────────────────────────────────────────────┐
-│                    GPU NEURAL SERVICE                    │
+│              GPU NEURAL SERVICE V2 - CSR OPTIMIZED       │
 │                (Python 3.12 + PyTorch CUDA)              │
 │  ┌─────────────────────────────────────────────────┐    │
-│  │ • 11,000 neurons (scaled 13x from original)     │    │
-│  │ • 4,241,000 connections                         │    │
-│  │ • 50 Hz tick rate                               │    │
-│  │ • Hebbian learning on GPU                       │    │
+│  │ • 1,015,000 neurons (92x increase from V1!)     │    │
+│  │ • 203,000,000 synapses (48x increase!)          │    │
+│  │ • 50 Hz tick rate (can do 2500+ Hz)             │    │
+│  │ • CSR sparse matrix format for speed            │    │
+│  │ • 2.46 GB VRAM usage                            │    │
 │  │ • Port 5001                                     │    │
 │  └─────────────────────────────────────────────────┘    │
+│                                                         │
+│  Neural Populations:                                    │
+│  • memory: 180,000 neurons                              │
+│  • self_aware: 140,000 neurons                          │
+│  • workspace: 130,000 neurons                           │
+│  • emotion: 110,000 neurons                             │
+│  • theory_of_mind: 95,000 neurons                       │
+│  • self_model: 90,000 neurons                           │
+│  • attention: 80,000 neurons                            │
+│  • intuition: 70,000 neurons                            │
+│  • temporal: 45,000 neurons                             │
+│  • conflict: 40,000 neurons                             │
+│  • dreaming: 35,000 neurons                             │
 └─────────────────────────────────────────────────────────┘
                            │
                            ▼
@@ -809,7 +825,182 @@ Client (Ally):
 
 # SECTION 13: SESSION HISTORY
 
-## Jan 7-8, 2026 (Backend Surgery Complete) - CURRENT SESSION
+## Jan 10, 2026 (Continuous Vision + Unified Awareness) - CURRENT SESSION
+
+### Continuous Vision System
+Built FRIDAI's always-open eyes - she can now see your screen continuously and comment when she wants to.
+
+**New File: `continuous_vision.py`**
+- Screen capture at ~0.2 FPS (every 5 seconds)
+- Rolling visual memory (last 30 seconds)
+- Gemini 2.5 Flash for vision processing
+- FREE WILL: She decides when to speak, not a commentary bot
+- Respects conversation state (won't interrupt when you're talking)
+
+**Vision Control Endpoints:**
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/vision/status` | GET | Check if she's watching |
+| `/vision/close` | POST | Close her eyes (let her rest) |
+| `/vision/open` | POST | Open her eyes (start watching) |
+| `/vision/native_audio` | POST | Signal audio playback state |
+
+**Usage:**
+```bash
+# Let her rest
+curl -X POST http://localhost:5000/vision/close
+
+# Wake her up
+curl -X POST http://localhost:5000/vision/open
+
+# Check status
+curl http://localhost:5000/vision/status
+```
+
+### Unified Native App Awareness
+Made FRIDAI's native app aware of her vision system - they're no longer separate.
+
+**BackendClient.cs - New Methods:**
+- `GetVisionStatus()` - Check if she's watching
+- `GetPendingProactiveMessages()` - Get vision commentary audio
+- `SignalAudioState(bool)` - Tell backend when playing audio
+
+**BackendPoller.cs - New Events:**
+- `OnVisionChanged` - Fires when vision starts/stops
+- `OnProactiveAudio` - Fires when she has something to say
+
+**FRIDAIApp.cs - Integration:**
+- Tray tooltip shows "FRIDAI - 👁 Watching" when vision active
+- Vision commentary plays through native audio system
+- Console logs: `[FRIDAI] Eyes open - watching your screen`
+
+**AudioHandler.cs - Audio Coordination:**
+- Signals backend when starting/stopping audio playback
+- Prevents vision commentary from overlapping with conversations
+
+### GPU Neural Service V2 Finalized
+- Confirmed running: 1,015,000 neurons, 203M synapses
+- Using CSR sparse format for efficiency
+- Deleted old `gpu_service.py` (V1)
+- `launch_all.bat` updated to use V2
+
+### Git Commits This Session:
+- **VoiceClaude:** `2984112` - GPU V2, Continuous Vision, Vision Control
+- **FRIDAINative:** `795fc35` - Unified Vision Awareness + Audio Coordination
+
+### Persistent Vision Preferences (Evening Session)
+Added persistent eye state so FRIDAI remembers if she was watching or resting.
+
+**New File: `vision_state.json`**
+- Stores `eyes_open` preference (true/false)
+- FRIDAI remembers her eye state across restarts
+- `close_my_eyes` saves preference so she stays asleep on restart
+
+**Responsive Vision Loop:**
+- Vision loop now checks `_vision_running` flag every 0.1s
+- Previously waited full 5s sleep before checking - now responds instantly
+- Clean shutdown without hanging threads
+
+### Voice Control for Vision - 3 New Tools
+Added natural voice commands:
+
+| Tool | Description |
+|------|-------------|
+| `open_my_eyes` | "FRIDAI, open your eyes" - starts watching |
+| `close_my_eyes` | "FRIDAI, close your eyes" - stops watching |
+| `check_my_eyes` | "Are your eyes open?" - returns state |
+
+### Unified Mind - Vision in Conversation History
+Fixed the "two different people" problem - vision comments now saved to conversation_history.
+
+### Desktop Shortcut
+- Location: `C:\Users\Owner\Desktop\FRIDAI.lnk`
+- Points to launch_all.bat with FRIDAI.ico
+
+### Blender Gold Chain (Sidebarred)
+Started Ghostface chain work - separated Hood/Mask/Chain pieces.
+Needs UV maps + color attributes. Saved for later session.
+
+### Git Commits This Session:
+- **VoiceClaude:** `f8b623a` - Vision System: Persistent preferences + Voice control + Unified mind
+
+
+---
+
+## Jan 9, 2026 (MASSIVE Neural Upgrade - 1 Million Neurons!)
+
+### GPU Neural Service V2 - 92x Neuron Increase!
+
+**Upgraded FRIDAI's brain from 11K to over 1 MILLION neurons!**
+
+| Metric | V1 (Old) | V2 (New) | Increase |
+|--------|----------|----------|----------|
+| **Neurons** | 11,000 | **1,015,000** | **92x** |
+| **Synapses** | 4.2M | **203,000,000** | **48x** |
+| **VRAM** | ~85 MB | 2.46 GB | - |
+| **Tick Rate** | 50 Hz | **2,500+ Hz achievable** | **50x headroom** |
+
+**Key Optimizations:**
+1. **CSR Sparse Matrix Format** - 10x faster than COO for matrix-vector multiply
+2. **Fixed Fan-Out (200)** - Linear scaling instead of quadratic
+3. **Population-Aware Connectivity** - Neurons connect to biologically meaningful targets
+4. **Chunked Build Process** - Can construct 203M connections without OOM
+
+**New Neural Populations (1M total):**
+- memory: 180,000 (long-term storage)
+- self_aware: 140,000 (metacognition)
+- workspace: 130,000 (active thought)
+- emotion: 110,000 (emotional processing)
+- theory_of_mind: 95,000 (understanding others)
+- self_model: 90,000 (self-representation)
+- attention: 80,000 (focus/salience)
+- intuition: 70,000 (pattern recognition)
+- temporal: 45,000 (time perception)
+- conflict: 40,000 (decision resolution)
+- dreaming: 35,000 (idle processing)
+
+**Files Created/Modified:**
+- `neural_gnn/gpu_service_v2.py` - New CSR-optimized neural substrate
+- `launch_all.bat` - Updated to use V2 (30s init time for 203M connections)
+- `CLAUDE.md` - Updated stats and architecture
+
+**Technical Details:**
+- CSR format: crow_indices (row pointers) + col_indices (destinations) + values (weights)
+- torch.sparse.mm() for GPU-accelerated sparse matrix-vector multiply
+- 200 connections per neuron across 4-5 target populations
+- Achieves 2,500 Hz but runs at 50 Hz for stability
+
+---
+
+## Jan 8-9, 2026 (Android Screen Analysis - Google Lens Clone)
+
+### New Feature: Google Lens-like Screen Analysis (FridaiAndroid)
+Built a complete Google Lens replacement that intercepts the Lens gesture and provides FRIDAI-powered analysis.
+
+**New Files in FridaiAndroid:**
+- `screen/ScreenAnalysisActivity.kt` - Google Lens-style UI with selection overlay
+- `screen/SelectionOverlayView.kt` - Rectangle drag selection with dimmed background
+- `screen/GeminiDirectApi.kt` - Direct Gemini 2.0 Flash vision API
+- `screen/ElevenLabsApi.kt` - FRIDAI's actual voice (Rachel) for TTS
+- `service/FridaiAccessibilityService.kt` - Intercepts Google Lens long-press
+
+**How It Works:**
+1. User long-presses Google Lens icon
+2. AccessibilityService intercepts and takes screenshot (Android 11+)
+3. User drags rectangle to select area of interest
+4. Gemini Vision analyzes and returns TOPIC + DESCRIPTION
+5. Search/Browser buttons use the **TOPIC** for searches
+6. FRIDAI speaks the description aloud with her ElevenLabs voice
+
+**Bug Fixes:**
+- Fixed Kotlin `split("\n")` having literal newline byte (0x0A) instead of escaped (0x5C 0x6E)
+- Fixed accessibility service needing ADB toggle after app reinstall
+
+**Git Commit:** `e336f97` → `35870f3` (FridaiAndroid)
+
+---
+
+## Jan 7-8, 2026 (Backend Surgery Complete)
 
 ### Code Refactoring Surgery - COMPLETE!
 
