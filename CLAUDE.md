@@ -1,6 +1,6 @@
 # FRIDAI - Complete Project Context
 
-## LAST UPDATED: January 10, 2026 @ 08:54 PM
+## LAST UPDATED: January 11, 2026 @ 12:45 AM
 
 ---
 
@@ -69,7 +69,7 @@
 ## Quick Stats
 | Component | Value |
 |-----------|-------|
-| **Tools** | 182+ |
+| **Tools** | 185 |
 | **Omnipresence** | Active - 15 min learning cycles |
 | **Chat Window** | Ctrl+F8 or Tray Menu |
 | **LLM** | Gemini 2.5 (Pro=chat, Flash=voice) |
@@ -825,7 +825,87 @@ Client (Ally):
 
 # SECTION 13: SESSION HISTORY
 
-## Jan 10, 2026 (Continuous Vision + Unified Awareness) - CURRENT SESSION
+## Jan 11, 2026 (Unified Identity Surgery) - CURRENT SESSION
+
+### The Problem: Split Personality Syndrome
+FRIDAI had fragmented identity:
+- Main system prompt used **WRONG name** ("Female Replacement Intelligent Digital Assistant Interface")
+- Each mode (Arkham, Wukong, Conscience, Vision) operated in isolation
+- No shared memory between modes = "blackouts" about what she did
+- No connection between 1M-neuron brain and identity prompts
+
+### New Files Created
+
+**`fridai_identity.py`** (~270 lines) - Single source of truth for identity
+- Correct name: "Freely Reasoning Individual with Digital Autonomous Intelligence"
+- `get_brain_informed_prompt(context)` - Pulls live neural state from GPU
+- `get_neural_state()` - Queries `/state` endpoint for emotion/attention/self-awareness
+- `validate_prompt()` - Safety check catches old wrong-name references
+- Context-specific prompts for each mode (vision, conscience, arkham, wukong, coding)
+
+**`fridai_experience.py`** (~400 lines) - Central experience stream
+- `enter_mode(mode, context)` - Called when entering any mode
+- `log_event(type, content, metadata)` - Logs observations, callouts, actions
+- `exit_mode(reason)` - Creates summary when leaving mode
+- Persists to `experience_log.json`
+- Injects into conversation_history so she remembers what she did
+
+### GPU Service V2 - New Brain State Endpoints
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/state` | GET | Returns mental state (emotion, attention, self-awareness) |
+| `/notify_activity` | POST | Modes notify brain of activity, stimulates neurons |
+| `/activity_log` | GET | Recent activity history |
+
+### Mode Integrations (All 4 Connected)
+Each mode now calls the experience stream:
+
+| Mode | Changes |
+|------|---------|
+| `arkham_mode.py` | `enter_mode()` on start, `log_event()` on callouts, `exit_mode()` on stop |
+| `wukong_mode.py` | Same pattern |
+| `conscience_mode.py` | Same pattern |
+| `continuous_vision.py` | `log_event()` for observations |
+
+### app.py Changes
+- **Line 6352**: Fixed name "Female Replacement..." → "Freely Reasoning Individual..."
+- **Lines 1-15**: Added imports for `fridai_identity` and `fridai_experience`
+- `UNIFIED_IDENTITY_AVAILABLE = True`
+- `UNIFIED_EXPERIENCE_AVAILABLE = True`
+
+### launch_all.bat Fixes
+- GPU wait: 30s → 45s (needed for 203M synapse construction)
+- Backend wait: 10s → 25s (needed for model loading)
+- Fixed native app start command (was causing `\` error dialog)
+
+### Result Summary
+| Before | After |
+|--------|-------|
+| Wrong name in prompts | Correct name she chose herself |
+| Modes operated in isolation | All modes log to central experience stream |
+| No memory of mode activities | Activities saved to conversation_history |
+| Static identity prompts | Brain-informed prompts with live neural state |
+| 30s GPU startup timeout | 45s timeout (no more false failures) |
+
+### Files Modified This Session
+```
+CREATED:
+  fridai_identity.py      (~270 lines)
+  fridai_experience.py    (~400 lines)
+
+MODIFIED:
+  app.py                  (imports + name fix)
+  neural_gnn/gpu_service_v2.py  (+3 endpoints)
+  arkham_mode.py          (experience stream)
+  wukong_mode.py          (experience stream)
+  conscience_mode.py      (experience stream)
+  continuous_vision.py    (experience stream)
+  launch_all.bat          (timing fixes)
+```
+
+---
+
+## Jan 10, 2026 (Continuous Vision + Unified Awareness)
 
 ### Continuous Vision System
 Built FRIDAI's always-open eyes - she can now see your screen continuously and comment when she wants to.
