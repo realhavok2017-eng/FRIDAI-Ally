@@ -1,6 +1,6 @@
 # FRIDAI - Complete Project Context
 
-## LAST UPDATED: January 11, 2026 @ 2:30 AM
+## LAST UPDATED: January 12, 2026 @ 4:30 AM
 
 ---
 
@@ -825,7 +825,41 @@ Client (Ally):
 
 # SECTION 13: SESSION HISTORY
 
-## Jan 11, 2026 (Unified Identity Surgery) - CURRENT SESSION
+## Jan 12, 2026 (3D Avatar Texture Loading) - CURRENT SESSION
+
+### The Problem: Avatar Showing Grey
+After attempting to add blink animation, the avatar was showing grey instead of the metallic blue appearance with glowing orange eyes.
+
+### Root Cause
+The GLB model (base_basic_shaded.glb) has a baked texture containing the full appearance (metallic blue chrome + orange glowing eyes), but GltfModelLoader.cs was only loading geometry - it ignored the embedded texture.
+
+### The Fix
+1. **GltfModelLoader.cs** - Added texture loading:
+   - LoadTextures(ModelRoot) - Extracts textures from GLB materials
+   - CreateTextureFromImage(byte[]) - Creates DirectX Texture2D from image data
+   - Loads emissive texture as base color (2048x2048 baked appearance)
+   - Added BaseTexture and BaseTextureSRV to LoadedModel class
+
+2. **FridaiAvatarRenderer.cs** - Updated shader to use texture:
+   - Added Texture2D baseTexture and sampler
+   - Shader now samples baked texture instead of procedural colors
+   - Added bloom/glow boost for bright emissive areas
+
+### Model Details
+- **Path:** C:/Users/Owner/Desktop/Fridai avatar/base_basic_shaded.glb
+- **Vertices:** 329,459
+- **Texture:** 2048x2048 emissive map with baked appearance
+
+### Git Commit
+- **Commit:** 9159180 - Add texture loading for GLB models
+- **Pushed to:** github.com/realhavok2017-eng/FRIDAI-Desktop (master)
+
+### TODO Next Session
+- Add blink animation (find eyelid vertex positions in mesh)
+
+---
+
+## Jan 11, 2026 (Unified Identity Surgery)
 
 ### The Problem: Split Personality Syndrome
 FRIDAI had fragmented identity:
