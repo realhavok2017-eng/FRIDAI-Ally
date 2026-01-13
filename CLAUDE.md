@@ -1,6 +1,6 @@
 # FRIDAI - Complete Project Context
 
-## LAST UPDATED: January 12, 2026 @ 4:30 AM
+## LAST UPDATED: January 12, 2026 @ 6:00 AM
 
 ---
 
@@ -825,37 +825,118 @@ Client (Ally):
 
 # SECTION 13: SESSION HISTORY
 
-## Jan 12, 2026 (3D Avatar Texture Loading) - CURRENT SESSION
+## Jan 12, 2026 (Matrix Code Rain + Lip Sync) - CURRENT SESSION
 
-### The Problem: Avatar Showing Grey
-After attempting to add blink animation, the avatar was showing grey instead of the metallic blue appearance with glowing orange eyes.
+### Matrix Code Rain - IMPLEMENTED!
+Gold Matrix-style characters flow UP through FRIDAI's body when user speaks to her.
 
-### Root Cause
-The GLB model (base_basic_shaded.glb) has a baked texture containing the full appearance (metallic blue chrome + orange glowing eyes), but GltfModelLoader.cs was only loading geometry - it ignored the embedded texture.
+**Implementation:**
+- Font texture atlas: `Resources/code_font.png` (8x8 grid = 64 characters)
+- Shader samples characters from atlas based on position + time
+- Only triggers on `Effects.y` (InputAudioLevel - user's voice, not TTS)
 
-### The Fix
-1. **GltfModelLoader.cs** - Added texture loading:
-   - LoadTextures(ModelRoot) - Extracts textures from GLB materials
-   - CreateTextureFromImage(byte[]) - Creates DirectX Texture2D from image data
-   - Loads emissive texture as base color (2048x2048 baked appearance)
-   - Added BaseTexture and BaseTextureSRV to LoadedModel class
+**Tuned Parameters:**
+- Columns: 20 (thin streams)
+- Flow speed: 5.5-8.5x (fast upward flow)
+- Flicker rate: 6x/sec (Matrix-like character switching)
+- Gold color: `float3(1.0, 0.7, 0.2)` matching existing glow
 
-2. **FridaiAvatarRenderer.cs** - Updated shader to use texture:
-   - Added Texture2D baseTexture and sampler
-   - Shader now samples baked texture instead of procedural colors
-   - Added bloom/glow boost for bright emissive areas
+**Shader Features:**
+- smoothstep transitions between character cells
+- Cell padding prevents atlas bleeding
+- Smooth audio fade in/out
+- Fresnel rim glow during processing
 
-### Model Details
-- **Path:** C:/Users/Owner/Desktop/Fridai avatar/base_basic_shaded.glb
-- **Vertices:** 329,459
-- **Texture:** 2048x2048 emissive map with baked appearance
+### Real Audio Lip Sync - IMPLEMENTED!
+Fixed lips staying open during silence - now uses REAL audio levels.
+
+**The Problem:**
+AudioHandler.cs was using FAKE audio levels:
+```csharp
+float fakeLevel = (float)(0.3 + 0.2 * Math.Sin(DateTime.Now.Ticks / 500000.0));
+```
+This oscillated 0.1-0.5 continuously, keeping mouth open.
+
+**The Fix:**
+- Added `MeteringSampleProvider` from NAudio to track real audio amplitude
+- Wraps the audio stream and fires `StreamVolume` events with actual levels
+- `_currentOutputLevel` tracks real speech volume
+- Reset to 0 when playback stops
+
+**Speech Threshold:**
+- Shader threshold: 0.02 (filters very quiet noise)
+- Mouth only opens for actual speech sounds
+- Closes properly during pauses and silence
 
 ### Git Commit
-- **Commit:** 9159180 - Add texture loading for GLB models
-- **Pushed to:** github.com/realhavok2017-eng/FRIDAI-Desktop (master)
+- `23fde89` - Matrix code rain + Real audio lip sync
 
-### TODO Next Session
-- Add blink animation (find eyelid vertex positions in mesh)
+---
+
+## Jan 12, 2026 (Earlier - Blink Animation + Breathing)
+
+### Blink Animation - IMPLEMENTED!
+Built shader-based vertex displacement for eyelid animation without model modifications.
+
+**Implementation:**
+- Added blink timing fields: `_blinkAmount`, `_nextBlinkTime`, `_blinkPhase`, `_isBlinking`
+- Random 2-6 second intervals, 150ms blink duration
+- `UpdateBlink()` method with smooth close/open animation
+- Vertex shader detects upper eyelid vertices and displaces them downward
+
+**Y Position Tuning (MAJOR ITERATION):**
+Initial vertex analysis suggested Y ~1.52-1.62 - was completely wrong!
+- 1.52-1.62 -> top of head
+- 1.48-1.55 -> still head
+- 1.38-1.46 -> forehead
+- 1.32-1.40 -> above brows
+- 1.26-1.34 -> on brows
+- 1.20-1.28 -> under brow
+- 1.14-1.22 -> on lids, not full shut
+- **1.11-1.19 -> PERFECT!**
+- 1.09-1.17 -> too low, reverted
+
+**Final Vertex Shader Detection:**
+```hlsl
+float isUpperLid = step(nearEye, 0.15) *    // Within 0.15 of eye center X
+                   step(1.11, pos.y) *       // Above 1.11
+                   step(pos.y, 1.19) *       // Below 1.19
+                   step(0.30, pos.z);        // Forward-facing
+```
+
+### Enhanced Breathing + Body Glow
+- Breathing amplitude: 0.003 -> 0.012 (4x more visible)
+- Body emissive threshold: 0.5 -> 0.4 (catches more glow areas)
+- Glow intensity: `glow * 0.8` with subtle pulse
+- Body pulse: `sin(Time.x * 2.0) * 0.08 + 0.92`
+
+### Git Commits This Session
+- `08851a6` - Avatar: Blink animation with shader-based vertex displacement (initial)
+- `a3672f2` - Avatar: Fine-tuned blink animation Y position (1.11-1.19)
+- `6bd7be0` - Avatar: Enhanced breathing + body emissive glow
+
+### Key Technical Learnings
+- Vertex analysis Y positions were WAY off (1.52+ vs actual 1.11-1.19)
+- User feedback iteration is essential for shader-based animation
+- Python scripts bypass Edit tool file modification race conditions
+- Blender shape key exports corrupt GLB - shader approach preferred
+
+---
+
+## NEXT TASK: MOUTH ANIMATION
+
+### Hybrid Approach Planned (Mixamo Jaw + Vertex Shader Lips)
+1. **Mixamo jaw rig** - Add basic jaw bone for open/close
+2. **Vertex shader lips** - Same technique as blink for lip detail
+3. Blender shape keys corrupt GLB - vertex shader is safer
+
+### Why Hybrid?
+- Mixamo auto-rigs body/jaw but minimal facial
+- Vertex shader proved reliable for blink
+- Correct lip Y position will need iteration (like eyelids)
+
+### Files to Modify
+- `FridaiAvatarRenderer.cs` - Add lip detection in vertex shader
 
 ---
 
@@ -1903,102 +1984,3 @@ FRIDAI uses text_to_3d with:
 - mode: "preview"
 Returns GLB/FBX/OBJ download links, saves to generated_3d_models/.
 
----
-
-# SECTION 14: STRANGE ADVENTURES SECURITY TESTING (Jan 5, 2026)
-
-## Overview
-Joe (Boss) needed to security test his company's POS system (strangeadv.com / nadaPOS) to show his business partner the vulnerabilities and get them fixed.
-
-## Target System
-- **Website:** https://www.strangeadv.com (React SPA on Vercel)
-- **API Backend:** https://web-production-ce6d.up.railway.app (Node.js on Railway)
-- **Shop ID:** `cff34b78-d2ae-40e5-a429-302c625229a5`
-- **POS System:** nadaPOS (custom built by partner)
-
-## Locations Found
-| Location | ID | Address |
-|----------|-----|---------|
-| **Tempe** (Main) | `750e4f2d-3d42-4bfc-b72a-5fc4bc17e518` | 2000 E. Rio Salado Pkwy, STE 1234, Tempe, AZ |
-| **Cafe** (Rocketfuel) | `11fa80d6-bce3-4ab7-adb3-30b127f4f952` | Same address |
-
-## Critical Vulnerabilities Found
-
-### 1. NO RATE LIMITING ON PIN LOGIN (CRITICAL)
-- Endpoint: POST /api/auth/login-pin
-- 4-digit PIN = 10,000 combinations
-- Can brute force ALL PINs in ~3 minutes
-- No lockout, no alerts, no detection
-
-### 2. PASSWORD HASHES EXPOSED IN API (CRITICAL)
-- GET /api/customers returns bcrypt password hashes
-- Attackers can crack offline and do credential stuffing
-
-### 3. BULK DATA EXPORT (HIGH)
-- 1,405 customers (names, emails, phones, password hashes)
-- 7,819 sales (transaction history, Square payment IDs)
-- 8 staff (personal emails exposed)
-- Any authenticated user can paginate through ALL data
-
-### 4. CORS MISCONFIGURATION (MEDIUM)
-- Returns Access-Control-Allow-Origin: *
-- Any website can make authenticated requests
-
-## Staff Exposed (8 people)
-- Andrew Lanni - andrewdlanni@gmail.com - Staff + Inventory
-- Bailey Overby - bailey@strangeadv.com - Admin
-- Col Stephens - col.k.stephens@gmail.com - Manager
-- Joe Furman - joe@strangeadv.com - Admin
-- Kori X - kori@strangeadv.com - Admin
-- Suhaani Pandya - suhaani.rp@gmail.com - Staff
-- Test Cashier - cashier@strangeadv.com - Staff
-- Will Milligan - magpi73@icloud.com - Staff
-
-## Security Testing Repo
-**GitHub:** github.com/realhavok2017-eng/StrangeAdv-Security (private)
-
-### Tools:
-- pin_cracker.py - Brute force PIN authentication
-- websec_scanner.py - Full security scan
-- pos_breaker.py - Credential brute force
-- live_breach_demo.py - Data exposure demo
-- cors_attack_poc.html - Browser CORS exploit
-
-### Fix Files (in fixes/ folder):
-- security-middleware.js - Rate limiting middleware (drop-in)
-- api-fixes.js - Remove password hashes, add role limits
-- IMPLEMENTATION_GUIDE.md - Step-by-step instructions
-- QUICK_SUMMARY.txt - One-page summary
-- SECURITY_REPORT_STRANGEADV.md - Full vulnerability report
-
-## The 15-Minute Fix (CRITICAL)
-```javascript
-npm install express-rate-limit
-
-const rateLimit = require('express-rate-limit');
-app.use('/api/auth/login-pin', rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 5
-}));
-```
-
-## How to Demo at Store
-1. Pull repo: git clone https://github.com/realhavok2017-eng/StrangeAdv-Security.git
-2. Install: pip install requests urllib3
-3. Run PIN cracker: python pin_cracker.py
-4. Show data exposure with curl commands
-5. Show the fix files
-
-## Key Endpoints
-- POST /api/auth/login-pin (no auth) - Returns JWT token
-- GET /api/customers (token) - 1,405 customers + password hashes
-- GET /api/sales (token) - 7,819 transactions
-- GET /api/staff (token) - 8 staff members
-- GET /api/locations (token) - 2 locations
-
-## Reminder When at Store
-1. Show partner SECURITY_REPORT_STRANGEADV.md
-2. Demo PIN cracker live
-3. Show curl commands to dump data
-4. Explain fix is simple (15 min critical, 1-2 hrs full)
-5. GET RATE LIMITING DEPLOYED TODAY
