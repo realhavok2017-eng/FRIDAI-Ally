@@ -69,7 +69,7 @@
 ## Quick Stats
 | Component | Value |
 |-----------|-------|
-| **Tools** | 195 |
+| **Tools** | 201 |
 | **Omnipresence** | Active - 15 min learning cycles |
 | **Chat Window** | Ctrl+F8 or Tray Menu |
 | **LLM** | Gemini 2.5 (Pro=chat, Flash=voice) |
@@ -825,7 +825,41 @@ Client (Ally):
 
 # SECTION 13: SESSION HISTORY
 
-## Jan 13, 2026 (Social Media Integration) - CURRENT SESSION
+## Jan 13, 2026 (Social Media + Video Generation) - CURRENT SESSION
+
+### Runway Video Generation - IMPLEMENTED!
+Added AI video generation capabilities for animated horror reels.
+
+**API Key:** `RUNWAYML_API_SECRET` in `.env` file
+
+**New File: `runway_video.py`** (~400 lines)
+- Image-to-video animation (turn static images into moving video)
+- Text-to-video generation (describe what you want)
+- Task status polling with auto-download
+- Experience stream integration
+
+**6 New Tools Added (195 → 201 total):**
+| Tool | Description |
+|------|-------------|
+| `animate_image` | Turn static image into animated video (2-10 sec) |
+| `generate_video` | Create video from text description (4/6/8 sec) |
+| `check_video_task` | Check video generation progress |
+| `get_video_history` | View generation history |
+| `list_my_videos` | List downloaded videos |
+| `get_runway_status` | Check Runway integration status |
+
+**Supported Models:**
+- `gen3a_turbo` - Fast, good for horror aesthetic
+- `gen4_turbo` - Highest quality
+- `veo3.1` / `veo3.1_fast` - Text-to-video
+
+**Pricing:**
+- 5 second video: $0.25
+- 10 second video: $0.50
+
+**Output Directory:** `VoiceClaude/generated_videos/`
+
+---
 
 ### Ayrshare Social Media Integration - IMPLEMENTED!
 Added full social media posting capabilities via Ayrshare API.
