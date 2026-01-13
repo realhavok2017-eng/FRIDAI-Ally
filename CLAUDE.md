@@ -1,6 +1,6 @@
 # FRIDAI - Complete Project Context
 
-## LAST UPDATED: January 12, 2026 @ 6:00 AM
+## LAST UPDATED: January 12, 2026 @ 11:00 AM
 
 ---
 
@@ -825,7 +825,100 @@ Client (Ally):
 
 # SECTION 13: SESSION HISTORY
 
-## Jan 12, 2026 (Matrix Code Rain + Lip Sync) - CURRENT SESSION
+## Jan 12, 2026 (Emotion Expressions + Talking Animation) - CURRENT SESSION
+
+### Physical Emotion Expressions - IMPLEMENTED!
+Added comprehensive emotion-driven physical expressions to FRIDAI's avatar.
+
+**5 Features Added:**
+
+#### 1. Talking Head Animation
+Replaced lazy idle sway with engaged talking mode when FRIDAI speaks.
+
+**Implementation (`FridaiAvatarRenderer.cs`):**
+- Added `_talkingBlend` field (0=idle, 1=talking)
+- When `AudioLevel > 0.05f`: blend to talking mode
+- Idle: gentle slow sway (`sin(_time * 0.8) * 0.05`)
+- Talking: dynamic layered movement + audio-reactive nods
+- Slight forward lean when engaged
+
+#### 2. Emotion Data Pipeline
+Fixed broken emotion polling and added valence/energy to shader.
+
+**Fixes:**
+- **EmotionState class** was parsing wrong field names (`current_mood` instead of `current_emotion`)
+- **Missing Valence** - critical -1 to +1 value wasn't being parsed
+- Added `EmotionValence`, `EmotionEnergy`, `CurrentEmotion` to `FRIDAIAvatar.cs`
+- BackendPoller now polls `/emotion/state` every 5 seconds
+- Shader now receives `Effects.z` = valence, `Effects.w` = energy
+
+**Files Fixed:**
+| File | Fix |
+|------|-----|
+| `BackendClient.cs` | Fixed EmotionState class, GetEmotionState() parsing |
+| `BackendPoller.cs` | Added emotion polling to avatar |
+| `FRIDAIAvatar.cs` | Added EmotionValence, EmotionEnergy properties |
+| `FridaiAvatarRenderer.cs` | Pass emotion values to shader via Effects vector |
+
+#### 3. Eyebrow Expressions (Vertex Shader)
+Shader-based eyebrow displacement driven by valence.
+
+**Behavior:**
+- Positive valence → eyebrows raised (happy, surprised)
+- Negative valence → eyebrows lowered (sad, angry)
+- High energy + negative valence → brows furrow inward (angry)
+
+**Y Position (Will need iteration like blink did):**
+- Initial: Y 1.20 to 1.35 (just above eyelids at 1.11-1.19)
+- X range: |X - 0.15| < 0.12 (near eye centers)
+
+#### 4. Mouth Corner Expressions (Vertex Shader)
+Smile/frown based on emotional valence.
+
+**Behavior:**
+- Positive valence → corners raised (smile)
+- Negative valence → corners lowered (frown)
+
+**Position (Will need iteration):**
+- Y range: 0.65 to 0.75 (mouth area)
+- X range: |X| 0.10 to 0.20 (at sides, not center)
+
+#### 5. Emotion-Based Color/Glow (Pixel Shader)
+Gold glow color and pulse rate respond to emotion.
+
+**Color Shifts:**
+- Happy (positive valence) → warmer, more yellow/white glow
+- Sad (negative valence) → cooler, less saturated glow
+
+**Pulse Speed:**
+- Calm (low energy) → slower pulse (2.5x)
+- Excited (high energy) → faster pulse (4.5x)
+- Body pulse: 1.5x (calm) to 3.0x (excited)
+
+### Key Technical Details
+
+**Shader Uniforms Used:**
+```hlsl
+Time.y = AudioLevel (her voice) - lip sync
+Time.w = BlinkAmount - eyelids
+Effects.z = EmotionValence (-1 to +1) - NEW
+Effects.w = EmotionEnergy (0 to 1) - NEW
+```
+
+**Data Flow:**
+```
+Backend /emotion/state → BackendPoller → avatar.EmotionValence/Energy
+→ FridaiAvatarRenderer → Effects.z/.w → HLSL Shader → Visual
+```
+
+### Expected Iteration
+Like blink animation, vertex positions will need testing:
+- Eyebrow Y range may need adjustment (started at 1.20-1.35)
+- Mouth corner Y/X ranges may need adjustment (started at 0.65-0.75, 0.10-0.20)
+
+---
+
+## Jan 12, 2026 (Matrix Code Rain + Lip Sync)
 
 ### Matrix Code Rain - IMPLEMENTED!
 Gold Matrix-style characters flow UP through FRIDAI's body when user speaks to her.
