@@ -908,6 +908,7 @@ Removed all Runway tools (unused - only using Veo for 60+ second videos).
 - `c24d582` - Fix missing speech coordinator import in app.py
 - `2cd8635` - Add Gaming Mode - Reduce network activity during competitive gaming
 - `30b81c1` - Connect gaming mode to unified speech architecture
+- `e26f1aa` - Exclude FiveM/GTA from gaming mode auto-detection
 
 ---
 
@@ -920,6 +921,7 @@ Gaming mode is now fully integrated with the unified speech architecture (no byp
 - 2 new tools: `gaming_mode`, `gaming_mode_auto_detect`
 - REST endpoints at `/gaming/*`
 - Auto-detects competitive games (Arc Raiders, Fortnite, Apex, etc.)
+- **Excludes Conscience Mode games** (FiveM, GTA5, RDR2) - these need FRIDAI's commentary
 - Pauses vision and omnipresence systems to reduce packet loss
 - Keeps voice available for commands
 
