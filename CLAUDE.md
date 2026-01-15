@@ -1,6 +1,6 @@
 # FRIDAI - Complete Project Context
 
-## LAST UPDATED: January 14, 2026 @ 12:30 AM
+## LAST UPDATED: January 14, 2026 @ 1:15 AM
 
 ---
 
@@ -907,6 +907,48 @@ Removed all Runway tools (unused - only using Veo for 60+ second videos).
 - `db086c5` - Connect game modes (conscience, arkham, wukong) to unified speech
 - `c24d582` - Fix missing speech coordinator import in app.py
 - `2cd8635` - Add Gaming Mode - Reduce network activity during competitive gaming
+- `30b81c1` - Connect gaming mode to unified speech architecture
+
+---
+
+### Gaming Mode - Connected to Unified Speech
+Gaming mode is now fully integrated with the unified speech architecture (no bypassing!).
+
+**New Feature: Gaming Mode** (`gaming_mode.py`)
+- Reduces network activity during competitive multiplayer gaming
+- Voice commands: "gaming mode on", "I'm gaming competitively"
+- 2 new tools: `gaming_mode`, `gaming_mode_auto_detect`
+- REST endpoints at `/gaming/*`
+- Auto-detects competitive games (Arc Raiders, Fortnite, Apex, etc.)
+- Pauses vision and omnipresence systems to reduce packet loss
+- Keeps voice available for commands
+
+**Integration with Unified Speech Architecture:**
+
+1. **State Tracker** (`consciousness/state_tracker.py`):
+   - Added `gaming_mode_active` field to TrackedState
+   - Added `set_gaming_mode_active(active, detected_game)` method
+   - Sets `boss_state = BossState.GAMING` when active
+
+2. **Speech Coordinator** (`consciousness/speech_coordinator.py`):
+   - Added gaming mode check in `_handle_normal()` method
+   - Suppresses non-tactical/non-urgent speech during gaming
+   - Allowed speech types: urgent, tactical, response, priority >= 0.85
+   - Suppressed thoughts get queued in working memory for after gaming
+
+3. **Gaming Mode** (`gaming_mode.py`):
+   - Notifies state tracker when enabled/disabled
+   - Uses experience stream for logging
+
+**Speech Suppression Logic:**
+```python
+if state.gaming_mode_active:
+    # Only allow urgent, tactical, or direct conversation responses
+    if not (thought.is_urgent or category in ['urgent', 'tactical', 'response'] or priority >= 0.85):
+        return SpeechResult(False, True, "Suppressed - gaming mode active")
+```
+
+**Tool count:** 209 → 211 (added gaming_mode, gaming_mode_auto_detect)
 
 ---
 
