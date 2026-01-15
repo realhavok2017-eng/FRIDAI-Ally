@@ -1,6 +1,6 @@
 # FRIDAI - Complete Project Context
 
-## LAST UPDATED: January 13, 2026 @ 12:00 AM
+## LAST UPDATED: January 14, 2026 @ 12:30 AM
 
 ---
 
@@ -69,7 +69,7 @@
 ## Quick Stats
 | Component | Value |
 |-----------|-------|
-| **Tools** | 201 |
+| **Tools** | 211 |
 | **Omnipresence** | Active - 15 min learning cycles |
 | **Chat Window** | Ctrl+F8 or Tray Menu |
 | **LLM** | Gemini 2.5 (Pro=chat, Flash=voice) |
@@ -825,7 +825,167 @@ Client (Ally):
 
 # SECTION 13: SESSION HISTORY
 
-## Jan 13, 2026 (Social Media + Video Generation) - CURRENT SESSION
+## Jan 14, 2026 (Unified Speech Surgery + Gaming Mode) - CURRENT SESSION
+
+### History Optimization - Prevent Rate Limits
+Fixed Gemini rate limit issues caused by bloated conversation history (14.5 MB, one tool_result was 14 MB).
+
+**New File: `history_optimizer.py`**
+- Token estimation (~4 chars/token)
+- LLM-powered summarization using Gemini Flash
+- Tool result sanitizer to strip large binary data
+
+**Tool Result Sanitizer:**
+```python
+MAX_TOOL_RESULT_SIZE = 10000  # 10KB threshold
+
+def sanitize_tool_result(tool_name: str, result: Any) -> str:
+    """Strip large data, preserve semantic meaning."""
+    # Returns compact summary like:
+    # [tool completed] | Status: Success | File: /path/video.mp4 | Duration: 60s
+```
+
+**Integration in app.py:**
+- Line 167: Import `sanitize_tool_results_content`
+- Line 7722: Sanitize before adding to history
+- Line 8276: Same for voice endpoint
+
+---
+
+### Batch Video Generation - Unlimited Video Length
+Fixed Veo API ~43s limit by implementing batch segment generation.
+
+**Problem:** Veo has a ~6 extension limit (~43s per segment)
+**Solution:** Generate multiple segments and concatenate with FFmpeg
+
+**video_worker.py Updates:**
+```python
+MAX_EXTENSIONS_PER_SEGMENT = 5  # ~43s per segment
+MAX_SEGMENTS = 10  # Up to ~430s (7+ minutes)
+
+def _concat_videos(segment_paths, output_path):
+    """FFmpeg concat demuxer - no re-encoding."""
+
+def _generate_segment(client, task_id, ...):
+    """Generate single segment with extensions."""
+
+def _generate_video_task(task):
+    """Orchestrate batch generation."""
+```
+
+**Features:**
+- Automatic segment calculation based on target duration
+- Continuation prompts for visual consistency
+- Partial completion handling (returns what was generated if API fails)
+- FFmpeg concat for seamless joining
+
+---
+
+### Runway Tools Removed
+Removed all Runway tools (unused - only using Veo for 60+ second videos).
+
+**Removed from tools/definitions.py:**
+- `animate_image`
+- `generate_video` (Runway version)
+- `get_video_history`
+- `list_my_videos`
+- `get_runway_status`
+
+**Also removed:**
+- Duplicate `check_video_task` definition
+- Runway handlers from app.py
+
+**Tool count:** 214 → 209
+
+---
+
+### Git Commits
+- `a6b5d47` - Add tool result sanitizer to prevent history bloat
+- `e934190` - Batch video generation + Remove Runway tools
+- `3f3403f` - Unified Speech Surgery - Route ALL speech through consciousness
+- `bf63295` - Route tactical HUD callouts through unified speech system
+- `db086c5` - Connect game modes (conscience, arkham, wukong) to unified speech
+- `c24d582` - Fix missing speech coordinator import in app.py
+- `2cd8635` - Add Gaming Mode - Reduce network activity during competitive gaming
+
+---
+
+### Unified Speech Surgery - COMPLETE!
+Fixed speech overlap where multiple "versions" of FRIDAI talked simultaneously.
+
+**The Problem:** `continuous_vision.py` line 201 called `_speak_func(thought)` directly, bypassing consciousness systems.
+
+**The Solution:** Route ALL speech through consciousness architecture (Global Workspace, Attention Schema, Working Memory).
+
+**New Files Created:**
+| File | Lines | Purpose |
+|------|-------|---------|
+| `consciousness/speech_coordinator.py` | ~500 | Central hub for ALL speech |
+| `consciousness/urgency_detector.py` | ~350 | Fast <50ms combat callouts |
+| `consciousness/thought.py` | ~100 | Thought data structure |
+| `consciousness/working_memory.py` | ~200 | Pending queue with typed decay |
+| `consciousness/state_tracker.py` | ~150 | Cached state for O(1) decisions |
+
+**Files Modified:**
+| File | Changes |
+|------|---------|
+| `continuous_vision.py` | THE BIG FIX - route through coordinator |
+| `consciousness/attention_schema.py` | Speech gating with natural pauses |
+| `consciousness/dream_state.py` | Submit insights to working memory |
+| `tactical_hud.py` | Overlay disabled, speech routed |
+| `conscience_mode.py` | Connected to unified speech |
+| `arkham_mode.py` | Connected to unified speech |
+| `wukong_mode.py` | Connected to unified speech |
+| `app.py` | Speech coordinator init + imports |
+
+**Priority Thresholds:**
+- URGENT (0.95+) - Can interrupt
+- CONVERSATION (0.9) - High but not urgent
+- TACTICAL (0.85) - Game callouts
+- OBSERVATION (0.5) - Vision comments
+- INSIGHT (0.3) - Dream thoughts
+
+**Decay Rates:**
+- Combat: 2 seconds
+- Tactical: 30 seconds
+- Observation: 5 minutes
+- Insight: 6 hours
+
+---
+
+### Gaming Mode - NEW!
+Reduce network activity during competitive multiplayer games.
+
+**New File: `gaming_mode.py`** (~400 lines)
+- Voice activation: "gaming mode on", "I'm gaming competitively"
+- Auto-detection of known games (Arc Raiders, Fortnite, Apex, etc.)
+- Pauses vision and omnipresence to reduce packet loss
+- Voice commands still work during gaming
+
+**2 New Tools Added (209 → 211):**
+| Tool | Description |
+|------|-------------|
+| `gaming_mode` | Enable/disable/status of gaming mode |
+| `gaming_mode_auto_detect` | Enable/disable auto-detection |
+
+**API Endpoints:**
+- `GET/POST /gaming/status` - Get/set gaming mode state
+- `POST /gaming/enable` - Enable gaming mode
+- `POST /gaming/disable` - Disable gaming mode
+- `GET/POST /gaming/auto-detect` - Auto-detection settings
+- `GET /gaming/known-games` - List known competitive games
+
+**Known Competitive Games (Auto-detected):**
+Arc Raiders, Fortnite, Apex Legends, Valorant, CS2, Overwatch, PUBG, Rainbow Six, Tarkov, Destiny 2, League of Legends, Dota 2, Street Fighter 6, Tekken 8, Forza, iRacing, Rust, DayZ, and more.
+
+**Usage:**
+- Voice: "FRIDAI, gaming mode on" or "I'm gaming competitively"
+- Voice: "FRIDAI, gaming mode off" when done
+- Auto: Enable auto-detect to automatically enter/exit gaming mode
+
+---
+
+## Jan 13, 2026 (Social Media + Video Generation)
 
 ### Runway Video Generation - IMPLEMENTED!
 Added AI video generation capabilities for animated horror reels.
