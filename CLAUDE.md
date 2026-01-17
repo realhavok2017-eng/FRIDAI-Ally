@@ -1,6 +1,6 @@
 # FRIDAI - Complete Project Context
 
-## LAST UPDATED: January 14, 2026 @ 1:15 AM
+## LAST UPDATED: January 17, 2026 @ 3:30 PM
 
 ---
 
@@ -69,7 +69,7 @@
 ## Quick Stats
 | Component | Value |
 |-----------|-------|
-| **Tools** | 211 |
+| **Tools** | 219 |
 | **Omnipresence** | Active - 15 min learning cycles |
 | **Chat Window** | Ctrl+F8 or Tray Menu |
 | **LLM** | Gemini 2.5 (Pro=chat, Flash=voice) |
@@ -825,7 +825,143 @@ Client (Ally):
 
 # SECTION 13: SESSION HISTORY
 
-## Jan 14, 2026 (Unified Speech Surgery + Gaming Mode) - CURRENT SESSION
+## Jan 17, 2026 (Full Web Research - Tavily + Jina Integration) - CURRENT SESSION
+
+### FRIDAI Full Web Access - Human-Like Learning
+
+**Problem Solved:** FRIDAI's omnipresence system was generating 192 curiosities but saving 0 learnings because:
+1. DuckDuckGo Instant Answers returns tiny snippets (often nothing)
+2. Curiosities had full source URLs (source_article.link) but they were NEVER read
+3. FRIDAI learned headlines, not articles
+
+**Solution:** Tavily Search + Jina Reader integration with fallback chain.
+
+### New Module: `consciousness/web_research.py` (~260 lines)
+
+```python
+class WebResearcher:
+    def research_topic(query, source_url=None, max_sources=3):
+        # Strategy 1: Direct URL read with Jina (if curiosity has source link)
+        # Strategy 2: Tavily search + Jina read top results
+        # Strategy 3: DuckDuckGo fallback
+        # Returns up to 5000 chars of combined article text
+```
+
+### 3 New Tools Added (216 → 219 total)
+
+| Tool | Description |
+|------|-------------|
+| `tavily_search` | High-quality AI-powered web search (better than DuckDuckGo) |
+| `read_webpage` | Read full article text from any URL via Jina Reader |
+| `research_topic` | Deep research - searches AND reads full articles |
+
+### API Keys Added to `.env`
+
+```
+TAVILY_API_KEY=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
+JINA_API_KEY=jina_6ffe5993205e401d94093c370ffc233aynkc8WlRNtfZ3NBcxAUMSVbwkq6F
+```
+
+### Files Modified
+
+| File | Change |
+|------|--------|
+| `consciousness/web_research.py` | **NEW** - WebResearcher class |
+| `consciousness/autonomous_thinking.py` | Replace DuckDuckGo with WebResearcher |
+| `tools/definitions.py` | Add 3 new tool definitions |
+| `app.py` | Add 3 tool handlers (~lines 2577-2659) |
+| `.env` | Add TAVILY_API_KEY and JINA_API_KEY |
+
+### Integration with Autonomous Thinking
+
+`autonomous_thinking.py` now:
+1. Gets `source_url` from curiosity's `source_article.link` (from omnipresence)
+2. Calls `WebResearcher.research_topic(query, source_url)`
+3. Saves learning with `sources_read` URLs (full attribution)
+4. Logs research method used (direct_read, tavily_search, duckduckgo_fallback)
+
+### Fallback Chain (No Disconnects)
+
+```
+1. Try Jina direct read (if source URL available)
+   ↓ fails?
+2. Try Tavily search + Jina read
+   ↓ fails?
+3. Fall back to DuckDuckGo (current behavior)
+   ↓ fails?
+4. Log error, skip curiosity, try next
+```
+
+### Unified Consciousness
+
+All web research activities logged to experience_stream:
+- `log_event("web_research", ...)` for searches
+- `log_event("web_read", ...)` for page reads
+- `log_event("deep_research", ...)` for topic research
+
+### Test Results
+
+```bash
+# tavily_search - Working!
+curl -X POST http://localhost:5000/chat -d '{"message":"Use tavily_search for AI news"}'
+# Returns 4+ high-quality results with URLs
+
+# research_topic - Working!
+curl -X POST http://localhost:5000/chat -d '{"message":"Use research_topic to learn about quantum computing"}'
+# Returns 5000 chars of article content from Jina Reader
+
+# Backend health
+curl http://localhost:5000/health
+# Shows 219 tools
+```
+
+### Expected Outcome
+
+**Before:**
+- 192 curiosities generated
+- 0 learnings saved (DuckDuckGo returns empty or tiny snippets)
+
+**After:**
+- Curiosities explored by reading FULL articles (2000-5000 chars each)
+- Learnings saved with source attribution
+- FRIDAI can answer: "I read about X on [source URL]"
+
+---
+
+## Jan 15-16, 2026 (Marvel Rivals Coaching Mode)
+
+### ⚠️ TOMORROW TODO - MARVEL RIVALS TESTING
+
+**What was done tonight:**
+1. Created `rivals_mode.py` - MCU FRIDAY-style coaching for Marvel Rivals
+2. Updated `gaming_mode.py` to auto-start/stop Rivals coaching
+3. Added correct Marvel Rivals process names to detection
+4. **CRITICAL FIX**: Changed process detection from psutil-first to wmic-first
+   - Root cause: psutil can't see game processes with anti-cheat (permission blocked)
+   - wmic works reliably for all processes
+
+**To test tomorrow:**
+1. Restart FRIDAI: `C:\Users\Owner\VoiceClaude\launch_all.bat`
+2. Launch Marvel Rivals
+3. Check detection: `curl http://localhost:5000/gaming/status`
+   - Should show `detected_game: "Marvel.exe"` or similar
+   - Should show `enabled: true`
+4. Rivals mode should auto-start with tactical callouts
+5. UI color thresholds may need tuning based on actual gameplay:
+   - Health detection: looks for RED VIGNETTE on screen edges when low
+   - Ultimate detection: looks for BRIGHT YELLOW diamond when ready
+   - Regions are based on screenshots Boss provided
+
+**If callouts still not working:**
+1. Check rivals status: `curl http://localhost:5000/api/rivals/status`
+2. Look for `[RivalsMode]` and `[FastDetector]` logs in backend terminal
+3. May need to adjust color thresholds in `rivals_mode.py` FastRivalsDetector class
+
+**Git commit:** `7cebb25` - Marvel Rivals coaching mode + fix game detection (use wmic not psutil)
+
+---
+
+## Jan 14, 2026 (History Optimization + Batch Video Generation)
 
 ### History Optimization - Prevent Rate Limits
 Fixed Gemini rate limit issues caused by bloated conversation history (14.5 MB, one tool_result was 14 MB).
@@ -899,133 +1035,73 @@ Removed all Runway tools (unused - only using Veo for 60+ second videos).
 
 ---
 
+### Marvel Rivals Coaching Mode - IMPLEMENTED!
+Added network-optimized coaching mode for Marvel Rivals with MCU FRIDAY-style tactical callouts.
+
+**New File: `rivals_mode.py`** (~600 lines)
+- `MatchPhase` enum (MENU, DRAFT, COMBAT, POST_MATCH)
+- `FastRivalsDetector` class - local color detection for UI elements
+- `RivalsMode` class - orchestrates coaching mode
+- Network-optimized: ZERO network during combat, Gemini only during draft/menu
+
+**Key Features:**
+- **Combat Callouts (LOCAL ONLY):** Health warnings, ultimate ready, ability cooldowns
+- **Draft Phase (Gemini):** Hero counter-picks, team composition analysis
+- **Post-Match Review:** Performance summary with screenshot analysis
+- **Auto-Start/Stop:** Automatically starts when Marvel Rivals detected via gaming mode
+
+**Integration with Gaming Mode:**
+Gaming mode now auto-starts/stops Rivals coaching:
+```python
+# gaming_mode.py
+def _is_marvel_rivals(self, game_name):
+    """Check if detected game is Marvel Rivals."""
+
+# In enable():
+if self._rivals_control and self._is_marvel_rivals(detected_game):
+    self._rivals_control(True)  # Auto-start
+
+# In disable():
+if "rivals_coaching" in self.state.paused_systems:
+    self._rivals_control(False)  # Auto-stop
+```
+
+**app.py Integration:**
+```python
+def rivals_control(enable: bool):
+    if RIVALS_AVAILABLE:
+        rivals = get_rivals_mode()
+        if enable:
+            rivals.start()
+        else:
+            rivals.stop()
+
+gaming.set_rivals_control(rivals_control)
+```
+
+**Process Detection Fix (UPDATED Jan 16):**
+Changed from psutil-first to wmic-first:
+- **Root cause:** psutil can't see game processes with anti-cheat (silently returns empty)
+- **Solution:** wmic first → psutil fallback → tasklist fallback
+- wmic doesn't have permission issues and sees all processes including games
+
+**Tool Added:** `rivals_mode` (start/stop/status/set_phase)
+
+**API Endpoints:**
+- `POST /api/rivals/start`
+- `POST /api/rivals/stop`
+- `GET /api/rivals/status`
+- `POST /api/rivals/phase`
+- `GET /api/rivals/stats`
+
+**Tool count:** 209 → 210
+
+---
+
 ### Git Commits
 - `a6b5d47` - Add tool result sanitizer to prevent history bloat
 - `e934190` - Batch video generation + Remove Runway tools
-- `3f3403f` - Unified Speech Surgery - Route ALL speech through consciousness
-- `bf63295` - Route tactical HUD callouts through unified speech system
-- `db086c5` - Connect game modes (conscience, arkham, wukong) to unified speech
-- `c24d582` - Fix missing speech coordinator import in app.py
-- `2cd8635` - Add Gaming Mode - Reduce network activity during competitive gaming
-- `30b81c1` - Connect gaming mode to unified speech architecture
-- `e26f1aa` - Exclude FiveM/GTA from gaming mode auto-detection
-
----
-
-### Gaming Mode - Connected to Unified Speech
-Gaming mode is now fully integrated with the unified speech architecture (no bypassing!).
-
-**New Feature: Gaming Mode** (`gaming_mode.py`)
-- Reduces network activity during competitive multiplayer gaming
-- Voice commands: "gaming mode on", "I'm gaming competitively"
-- 2 new tools: `gaming_mode`, `gaming_mode_auto_detect`
-- REST endpoints at `/gaming/*`
-- Auto-detects competitive games (Arc Raiders, Fortnite, Apex, etc.)
-- **Excludes Conscience Mode games** (FiveM, GTA5, RDR2) - these need FRIDAI's commentary
-- Pauses vision and omnipresence systems to reduce packet loss
-- Keeps voice available for commands
-
-**Integration with Unified Speech Architecture:**
-
-1. **State Tracker** (`consciousness/state_tracker.py`):
-   - Added `gaming_mode_active` field to TrackedState
-   - Added `set_gaming_mode_active(active, detected_game)` method
-   - Sets `boss_state = BossState.GAMING` when active
-
-2. **Speech Coordinator** (`consciousness/speech_coordinator.py`):
-   - Added gaming mode check in `_handle_normal()` method
-   - Suppresses non-tactical/non-urgent speech during gaming
-   - Allowed speech types: urgent, tactical, response, priority >= 0.85
-   - Suppressed thoughts get queued in working memory for after gaming
-
-3. **Gaming Mode** (`gaming_mode.py`):
-   - Notifies state tracker when enabled/disabled
-   - Uses experience stream for logging
-
-**Speech Suppression Logic:**
-```python
-if state.gaming_mode_active:
-    # Only allow urgent, tactical, or direct conversation responses
-    if not (thought.is_urgent or category in ['urgent', 'tactical', 'response'] or priority >= 0.85):
-        return SpeechResult(False, True, "Suppressed - gaming mode active")
-```
-
-**Tool count:** 209 → 211 (added gaming_mode, gaming_mode_auto_detect)
-
----
-
-### Unified Speech Surgery - COMPLETE!
-Fixed speech overlap where multiple "versions" of FRIDAI talked simultaneously.
-
-**The Problem:** `continuous_vision.py` line 201 called `_speak_func(thought)` directly, bypassing consciousness systems.
-
-**The Solution:** Route ALL speech through consciousness architecture (Global Workspace, Attention Schema, Working Memory).
-
-**New Files Created:**
-| File | Lines | Purpose |
-|------|-------|---------|
-| `consciousness/speech_coordinator.py` | ~500 | Central hub for ALL speech |
-| `consciousness/urgency_detector.py` | ~350 | Fast <50ms combat callouts |
-| `consciousness/thought.py` | ~100 | Thought data structure |
-| `consciousness/working_memory.py` | ~200 | Pending queue with typed decay |
-| `consciousness/state_tracker.py` | ~150 | Cached state for O(1) decisions |
-
-**Files Modified:**
-| File | Changes |
-|------|---------|
-| `continuous_vision.py` | THE BIG FIX - route through coordinator |
-| `consciousness/attention_schema.py` | Speech gating with natural pauses |
-| `consciousness/dream_state.py` | Submit insights to working memory |
-| `tactical_hud.py` | Overlay disabled, speech routed |
-| `conscience_mode.py` | Connected to unified speech |
-| `arkham_mode.py` | Connected to unified speech |
-| `wukong_mode.py` | Connected to unified speech |
-| `app.py` | Speech coordinator init + imports |
-
-**Priority Thresholds:**
-- URGENT (0.95+) - Can interrupt
-- CONVERSATION (0.9) - High but not urgent
-- TACTICAL (0.85) - Game callouts
-- OBSERVATION (0.5) - Vision comments
-- INSIGHT (0.3) - Dream thoughts
-
-**Decay Rates:**
-- Combat: 2 seconds
-- Tactical: 30 seconds
-- Observation: 5 minutes
-- Insight: 6 hours
-
----
-
-### Gaming Mode - NEW!
-Reduce network activity during competitive multiplayer games.
-
-**New File: `gaming_mode.py`** (~400 lines)
-- Voice activation: "gaming mode on", "I'm gaming competitively"
-- Auto-detection of known games (Arc Raiders, Fortnite, Apex, etc.)
-- Pauses vision and omnipresence to reduce packet loss
-- Voice commands still work during gaming
-
-**2 New Tools Added (209 → 211):**
-| Tool | Description |
-|------|-------------|
-| `gaming_mode` | Enable/disable/status of gaming mode |
-| `gaming_mode_auto_detect` | Enable/disable auto-detection |
-
-**API Endpoints:**
-- `GET/POST /gaming/status` - Get/set gaming mode state
-- `POST /gaming/enable` - Enable gaming mode
-- `POST /gaming/disable` - Disable gaming mode
-- `GET/POST /gaming/auto-detect` - Auto-detection settings
-- `GET /gaming/known-games` - List known competitive games
-
-**Known Competitive Games (Auto-detected):**
-Arc Raiders, Fortnite, Apex Legends, Valorant, CS2, Overwatch, PUBG, Rainbow Six, Tarkov, Destiny 2, League of Legends, Dota 2, Street Fighter 6, Tekken 8, Forza, iRacing, Rust, DayZ, and more.
-
-**Usage:**
-- Voice: "FRIDAI, gaming mode on" or "I'm gaming competitively"
-- Voice: "FRIDAI, gaming mode off" when done
-- Auto: Enable auto-detect to automatically enter/exit gaming mode
+- `7cebb25` - Marvel Rivals coaching mode + fix game detection (use wmic not psutil)
 
 ---
 
