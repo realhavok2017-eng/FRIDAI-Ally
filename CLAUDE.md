@@ -1,6 +1,6 @@
 # FRIDAI - Complete Project Context
 
-## LAST UPDATED: January 17, 2026 @ 3:30 PM
+## LAST UPDATED: January 17, 2026 @ 11:30 PM
 
 ---
 
@@ -825,7 +825,88 @@ Client (Ally):
 
 # SECTION 13: SESSION HISTORY
 
-## Jan 17, 2026 (Full Web Research - Tavily + Jina Integration) - CURRENT SESSION
+## Jan 17, 2026 (Architecture Audit + Web Research) - CURRENT SESSION
+
+### FRIDAI Architecture Audit - Brain Unification Surgery COMPLETE!
+
+**Problem Solved:** FRIDAI had "split-brain syndrome":
+- 7 independent decision-making systems that could conflict
+- 5 game modes that could run simultaneously without mutual awareness
+- 48+ JSON state files with no centralized management
+- Multiple speech outputs bypassing the unified speech system
+
+**Solution:** Complete Architecture Audit with 4 Phases of implementation.
+
+### Phase 1: Core Managers (73f5ee8)
+
+| New File | Lines | Purpose |
+|----------|-------|---------|
+| `consciousness/voice_mode_manager.py` | ~200 | Ensures only ONE voice mode active |
+| `consciousness/mode_registry.py` | ~200 | Central registry of all active modes |
+| `consciousness/capture_coordinator.py` | ~200 | Shared screen capture (prevents 5+ threads grabbing) |
+| `consciousness/thread_registry.py` | ~100 | Track all daemon threads |
+
+### Phase 2: Integration (39262fc)
+
+- Connected all TTS callbacks to SpeechCoordinator (conscience, arkham, wukong, rivals)
+- Connected all game modes to ModeRegistry (start/stop registration)
+- Connected all game modes to VoiceModeManager (one voice only)
+- Updated all modes to use CaptureCoordinator
+
+### Phase 3: State & Validation (9d1b8c8)
+
+| New File | Lines | Purpose |
+|----------|-------|---------|
+| `consciousness/state_manager.py` | ~475 | Thread-safe JSON persistence |
+| `consciousness/startup_validation.py` | ~230 | Manager health checks |
+
+**StateManager Features:**
+- Per-file RLocks (no race conditions)
+- In-memory caching with dirty tracking
+- Multi-file atomic transactions with rollback
+- Backup before writes for critical files
+
+**Fixes Applied:**
+- `state_tracker.py`: Gaming mode prevents IDLE reset while gaming
+- `thought_competition.py`: Emotion affects speech priority:
+  - Sad → less tactical callouts (0.8x), less observations (0.7x)
+  - Happy → more observations (1.15x), more insights (1.1x)
+  - High energy → faster combat callouts (1.2x)
+  - Low energy → fewer observations (0.6x)
+
+### Phase 4: Health & Validation (446db71)
+
+**New Endpoints:**
+- `GET /health` - Now includes manager health summary
+- `GET /health/managers` - Detailed manager status
+
+**Experience Stream Updates:**
+- Added KNOWN_SOURCES validation (12 sources)
+- log_event now validates and tracks source
+- Warns on unknown sources
+
+### Architecture Audit Success Criteria - ALL MET ✅
+
+1. ✅ Only ONE game mode can be active at a time (ModeRegistry)
+2. ✅ Only ONE voice speaks (VoiceModeManager + SpeechCoordinator)
+3. ✅ All state changes are thread-safe (StateManager)
+4. ✅ All modes log to unified experience stream
+5. ✅ Screen capture is shared (CaptureCoordinator)
+6. ✅ All threads tracked (ThreadRegistry)
+7. ✅ Gaming mode doesn't conflict with StateTracker
+8. ✅ Emotion influences speech priority
+
+### Git Commits (All Pushed)
+
+```
+446db71 FRIDAI Architecture Audit - Part 4: Health & Validation
+9d1b8c8 FRIDAI Architecture Audit - Part 3: State & Validation
+39262fc FRIDAI Architecture Audit - Part 2: Integration
+73f5ee8 FRIDAI Architecture Audit - Part 1: Core Managers
+760753c BACKUP: Pre-architecture-audit state
+```
+
+---
 
 ### FRIDAI Full Web Access - Human-Like Learning
 
