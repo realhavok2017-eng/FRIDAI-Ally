@@ -1,6 +1,6 @@
 # FRIDAI - Complete Project Context
 
-## LAST UPDATED: January 21, 2026 @ End of Session
+## LAST UPDATED: January 22, 2026 @ End of Session
 
 ---
 
@@ -2651,4 +2651,123 @@ FRIDAI uses text_to_3d with:
 - art_style: "realistic"
 - mode: "preview"
 Returns GLB/FBX/OBJ download links, saves to generated_3d_models/.
+
+---
+
+# SECTION 14: AI MUSIC GENERATION (Jan 22, 2026)
+
+## Session Overview
+Explored AI music generation landscape and developed lyric writing techniques for human-sounding output.
+
+## AI Music Generation Options
+
+### Full Song Generation (Vocals + Music)
+| Service | Type | Cost | Notes |
+|---------|------|------|-------|
+| **Suno** | Full songs with vocals | Free tier: 50 credits/day (~10 songs) | Best quality, no official API |
+| **Udio** | Full songs with vocals | Free tier available | Competitor to Suno |
+| **SunoAPI.org** | Unofficial Suno API | ~$0.01/song | Reverse-engineered, against ToS |
+| **Apiframe** | Suno API wrapper | $19/mo for ~50 songs | Has free 300 credit trial |
+
+### Instrumentals/Beats (Local/Free)
+| Service | Type | Notes |
+|---------|------|-------|
+| **MusicGen (Meta)** | Open source | Runs locally on GPU, no vocals |
+| **Stable Audio** | Instrumentals | Good for beats/sound effects |
+| **Bark** | Voice/singing | Can combine with MusicGen for DIY |
+
+## Lyric Writing Techniques (Human-Sounding)
+
+### What Makes Lyrics Sound AI (Avoid):
+- Every line is a "bar" - trying too hard
+- Perfect rhyme schemes with no variation
+- Generic metaphors ("heart on fire")
+- Over-explaining/preachy
+- Too grammatically correct
+- No filler words or ad-libs
+- Too organized/logical flow
+
+### What Makes Lyrics Sound Human (Do This):
+- Mix simple lines with complex ones
+- Internal rhymes, not just end rhymes
+- Incomplete thoughts, trailing off
+- Ad-libs throughout (yeah, uh, what, nah)
+- Specific details (brands, names, places)
+- Slang appropriate to era/style
+- Repetition of key phrases
+- Some lines just vibes, not deep
+- Varied rhyme density
+
+### Style References Tested:
+- **Lil Wayne (Young Money era)** - Wordplay heavy, punchlines
+- **Eminem (Marshall Mathers)** - Multi-syllabic rhymes, anger
+- **Future/2 Chainz** - Trap, melodic, brand heavy
+- **DillanPonders** - Toronto underground, anti-commercial
+- **TruthTheBull** - Gaming energy, punchy
+- **Lil Baby** - Flex + loyalty, TikTok friendly
+
+## Suno Prompt Format
+
+**Style of Music box:**
+```
+dark trap, hard 808s, aggressive hi-hats, [artist] type, melodic trap, [BPM] bpm, confident delivery, male vocals, minor key
+```
+
+**Lyrics box formatting:**
+```
+[Hook]
+lyrics here
+
+[Verse 1]
+lyrics here
+
+[Bridge]
+lyrics here
+
+[Outro]
+lyrics here
+```
+
+## Songs Created This Session
+
+### Song 1: "Unstable Genius" (Personal/Introspective)
+**Topics:** Gaming, Twitch, bakery business, mental instability, chosen family, shady/real friends, no family approval
+**Style:** Dark trap, DillanPonders/TruthTheBull energy
+**Key References:** Joker, Walter White, Micah Bell, Arthur Morgan, Scarface, Kanye, Squid Game, John Wick, Anakin, Discord, GTA, video game save files
+
+### Song 2: "We Up Now" (TikTok Viral Potential)
+**Topics:** Flexing success, stunting on haters, taking real ones to the top, living good
+**Style:** Lil Baby type, melodic trap, 145 bpm
+**TikTok Moments:**
+- "Spent a bag today just 'cause I could"
+- "Yeah we up, we really up"
+- "Used to hate, now they in love / It's too late, we had enough"
+
+---
+
+## TOMORROW'S PROJECT: FRIDAI Music Understanding
+
+### Goal:
+Give FRIDAI the ability to generate her own music prompts - both lyrics and beat/genre descriptions.
+
+### Planned Implementation:
+1. **Music Knowledge Base** - Genre characteristics, artist styles, production terms
+2. **Lyric Generation Tool** - Apply human-sounding techniques learned today
+3. **Beat Prompt Generator** - Suno-formatted style prompts
+4. **Style Matching** - Analyze reference tracks and match vibe
+5. **Integration** - New tools for FRIDAI to create music autonomously
+
+### Files to Create:
+- `music_knowledge.py` - Genre/style database
+- `lyric_generator.py` - Human-sounding lyric generation
+- `beat_prompt_generator.py` - Suno/Udio prompt formatting
+- Tools in `tools/definitions.py` - New music tools
+
+### Potential Tools:
+| Tool | Description |
+|------|-------------|
+| `generate_lyrics` | Create lyrics given topic, style, mood |
+| `generate_beat_prompt` | Create Suno-compatible beat description |
+| `analyze_song_style` | Identify style elements from description |
+| `suggest_music_style` | Recommend genre/style for topic |
 
