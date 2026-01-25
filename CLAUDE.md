@@ -1,6 +1,6 @@
 # FRIDAI - Complete Project Context
 
-## LAST UPDATED: January 23, 2026 @ End of Session
+## LAST UPDATED: January 25, 2026 @ End of Session
 
 ---
 
@@ -2931,3 +2931,135 @@ Created 13 complete songs for Suno with beat prompts, direction tags, and pocket
 - `music_knowledge.py` - All the style/genre data documented above
 - `lyric_generator.py` - Apply human-sounding techniques
 - `beat_prompt_generator.py` - Suno-compatible prompts
+
+---
+
+# SECTION 16: UDIO SESSION - Jan 25, 2026
+
+## Session Overview
+First Udio track creation - lazy mumble trap with game/movie references and ex themes.
+
+## Udio vs Suno Research
+- **Udio** is the closest competitor to Suno in quality
+- Better production quality for pop/EDM/rap - more "studio-grade" sound
+- More control + stem downloads
+- Both platforms now have settlements with major labels (Warner, UMG)
+
+## Track Created: "Subtle Flexes"
+
+### Vibe/Style:
+- Lazy mumble rap, unbothered energy
+- 21 Savage type flow
+- No singing, talk-rap delivery
+- Hard beat with replay value
+
+### Beat Prompt (Udio "Describe Your Song" box):
+```
+dark trap, heavy 808s, hypnotic bass, 21 Savage type, lazy flow, mumble rap, 136 bpm, spacey pads, hard hitting drums, no singing, talk-rap delivery, confident laid back, minor key, atmospheric
+```
+
+### Themes:
+- Exes and moving on to new ones
+- Flexing on past relationships
+- Game character comparisons (Kratos, Arthur Morgan, Trevor)
+- Actor/superhero parallels (Tony Stark/RDJ, Bruce Wayne, John Wick, Deadpool, Han Solo)
+- Beat so hard it gets referenced in lyrics
+
+### Key Line (Boss's original):
+"i make it fit, like all my exes, i cant help that im built like this i run on subtle flexes"
+
+### Full Lyrics:
+```
+[Intro - Lazy, Mumbled]
+yeah... uh huh...
+this beat stupid...
+mmm...
+
+[Verse 1 - Laid Back Flow, In The Pocket]
+movin' slow but the bag come fast
+tony stark with it, built the suit from scratch
+she was pepper, now she past tense
+new one textin', old one big mad
+i don't chase, nah i replace
+kratos energy, god of war face
+unbothered, yeah i'm in my bag
+beat so hard, had to say it twice
+beat so hard, put it on my grave
+casket droppin' with the 808
+
+[Hook - Lazy Mumble, Repetitive]
+i make it fit, like all my exes
+can't help that i'm built like this
+i run on subtle flexes, uh
+subtle flexes, yeah
+subtle flexes, mmm
+
+[Verse 2 - Slightly Faster, Still Lazy]
+bruce wayne, three dates in a week
+different cities, they don't ever meet
+geralt vibes, witcher in these streets
+side quest women, main quest money
+john wick calm until it isn't
+she thought she was the one, nah you one of many
+arthur morgan, outlaw with the plan
+ride out on 'em, never look back, damn
+deadpool mouth, i don't take it serious
+ex blowin' up my phone, i'm delirious
+nah, i'm just sleepy
+this too easy
+
+[Hook]
+i make it fit, like all my exes
+can't help that i'm built like this
+i run on subtle flexes, uh
+subtle flexes, yeah
+subtle flexes, mmm
+
+[Verse 3 - Flow Switch, Punchier]
+han solo, shoot first every time
+new girl fine, old girl cryin'
+nathan drake, i'm climbin' out the mess
+tomb raider ex, she belong in the past
+trevor vibes when they test my patience
+normally i'm chill, spacious
+rdj before the mcu
+fumbled, came back, now the money blue
+that's growth... or whatever
+i don't keep up, i move better
+movin' stupid, movin' dumb
+beat knockin' like i owe it some
+
+[Outro - Fading, Mumbled]
+subtle flexes...
+yeah...
+i make it fit...
+mmm...
+this beat dumb hard...
+uh huh...
+```
+
+### Udio Tips Learned:
+- Use "Custom" lyrics mode (not Auto-Generate)
+- ~6 lines per 30 seconds of track
+- Generate in chunks (Intro + V1 + Hook first, then extend)
+- Add "no singing, talk-rap" to prevent melodic vocals
+- 132-138 BPM for lazy pocket feel
+- "21 Savage type" or "Future type" helps get mumble vibe
+
+### References Used:
+| Character | Context |
+|-----------|---------|
+| Tony Stark/RDJ | Built from scratch, Pepper ex reference |
+| Kratos | God of War energy, unbothered destroyer |
+| Bruce Wayne | Multiple women, different cities |
+| Geralt | Witcher moving town to town, side quests |
+| John Wick | Calm until provoked |
+| Arthur Morgan | Outlaw, ride out, never look back |
+| Deadpool | Doesn't take anything serious |
+| Han Solo | Shoot first, smooth operator |
+| Nathan Drake | Climbing out of mess, adventurer |
+| Trevor (GTA) | Unhinged when tested |
+
+---
+
+*Night, Boss. Track's ready to cook when you hop back on Udio.*
