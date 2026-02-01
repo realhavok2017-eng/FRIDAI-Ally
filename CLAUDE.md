@@ -1168,11 +1168,99 @@ When adding tool handlers, heredoc strings converted `\\n` escape sequences to l
 curl -X POST http://localhost:5000/twitch/configure/env
 curl -X POST http://localhost:5000/twitch/start
 
+# Initialize callbacks (if not auto-set)
+curl -X POST http://localhost:5000/twitch/init_callbacks
+
 # Or use tools via FRIDAI
 "FRIDAI, connect to Twitch"
 "FRIDAI, say hello in chat"
 "FRIDAI, what's happening in Twitch chat?"
 ```
+
+---
+
+### VTuber Companion Mode - Same FRIDAI, Just in Chat! (Session 2)
+
+**Problem:** FRIDAI was responding to Twitch chat but acting like a "split personality":
+- Gave short/weird responses like just "oh" to questions
+- Didn't recognize Boss (gghavoktv) as... Boss
+- Could potentially cause speech overlap issues
+
+**Solution:** Route ALL Twitch chat through FRIDAI's MAIN brain (same `/chat` endpoint as normal conversations).
+
+#### Boss Identity Recognition
+```python
+# In twitch_chat_callback:
+is_boss = username.lower() == "gghavoktv"
+
+if is_boss:
+    formatted_message = f"[Twitch Chat - This is you, Boss, talking via Twitch] {message}"
+else:
+    formatted_message = f"[Twitch Chat from viewer @{username}] {message}"
+```
+
+#### Unified Brain Routing
+Instead of calling Gemini directly (which loses all memory/context), Twitch chat now calls:
+```python
+response = requests.post(
+    "http://localhost:5000/chat",
+    json={"message": formatted_message},
+    timeout=30
+)
+```
+
+This means:
+- Same conversation history as normal chat
+- Same memory systems
+- Same personality/context
+- FRIDAI knows what she said in Twitch AND normal conversations
+
+#### SpeechCoordinator Integration
+TTS callback now routes through unified speech system to prevent overlap:
+```python
+from consciousness.speech_coordinator import get_speech_coordinator
+coordinator = get_speech_coordinator()
+result = coordinator.submit_thought(
+    content=text,
+    source="twitch",
+    priority=0.8,
+    thought_type="response",
+    metadata={"mode": "twitch", "output": "native"}
+)
+```
+
+#### New Endpoints Added
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/twitch/init_callbacks` | POST | Manually initialize TTS/Chat/Emotion callbacks |
+| `/twitch/callback_status` | GET | Check if callbacks are properly set |
+
+#### Files Modified (Session 2)
+| File | Change |
+|------|--------|
+| `twitch_integration.py` | Added `TWITCH_AVAILABLE` constant, debug print |
+| `routes/twitch_routes.py` | Added init_callbacks endpoint, callback_status endpoint, Boss identity, unified brain routing |
+
+#### Startup Sequence
+```bash
+# 1. Start FRIDAI
+C:\Users\Owner\VoiceClaude\launch_all.bat
+
+# 2. Configure from env
+curl -X POST http://localhost:5000/twitch/configure/env
+
+# 3. Initialize callbacks (connects TTS, chat, emotion)
+curl -X POST http://localhost:5000/twitch/init_callbacks
+
+# 4. Start IRC connection
+curl -X POST http://localhost:5000/twitch/start
+
+# 5. Verify
+curl http://localhost:5000/twitch/callback_status
+# Should show: tts_callback: true, chat_callback: true, connected: true
+```
+
+**Git Commit:** `31decdb` - Twitch Integration - FRIDAI VTuber Companion Mode
 
 ---
 
