@@ -1,6 +1,6 @@
 # FRIDAI - Complete Project Context
 
-## LAST UPDATED: February 1, 2026
+## LAST UPDATED: February 2, 2026
 
 ---
 
@@ -1079,6 +1079,46 @@ Client (Ally):
 ---
 
 # SECTION 13: SESSION HISTORY
+
+## Feb 2, 2026 (Discord + Twitch Integration Fixes)
+
+### Discord Bot Integration Fixes
+Fixed Discord bot not responding to messages in general chat or voice.
+
+**Issues Fixed:**
+1. **discord_venv didn't exist** - Created with Python 3.12
+2. **Missing dependencies** - Installed py-cord[voice], python-dotenv, aiohttp, requests, elevenlabs, openai-whisper
+3. **Wrong Discord library** - Code was written for py-cord, not discord.py
+4. **Added debug logging** - `MESSAGE RECEIVED:`, `Triggers -`, `TRIGGERED!`, `Backend response:`
+
+**Files Modified:**
+| File | Change |
+|------|--------|
+| `discord_bot.py` | Added comprehensive debug logging for message handling |
+| `launch_all.bat` | Added Discord bot as step [4/5] |
+
+### Twitch Callback Import Fix
+Fixed `cannot import name 'get_gemini_response' from 'gemini_wrapper'` error.
+
+**Root Cause:** The `get_gemini_response()` function didn't exist in gemini_wrapper.py.
+
+**Fix:** Added the function to gemini_wrapper.py (line 464):
+```python
+def get_gemini_response(prompt: str, max_tokens: int = 200, model: str = "gemini-2.5-flash") -> str:
+    """Simple helper function to get a quick Gemini response."""
+    # Uses gemini_client.messages.create() with standard settings
+```
+
+**Files Modified:**
+| File | Change |
+|------|--------|
+| `gemini_wrapper.py` | Added `get_gemini_response()` function |
+| `app.py` | Twitch callback now properly imports and uses the function |
+
+### Git Commit
+- `bd0b78a` - Discord integration fixes + Twitch callback repair
+
+---
 
 ## Feb 1, 2026 (Late Night - Area 57 Song + FRIDAI Audit + Minecraft Project)
 
