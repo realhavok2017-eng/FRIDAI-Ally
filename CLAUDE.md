@@ -1,6 +1,6 @@
 # FRIDAI - Complete Project Context
 
-## LAST UPDATED: February 2, 2026
+## LAST UPDATED: February 6, 2026
 
 ---
 
@@ -1079,6 +1079,65 @@ Client (Ally):
 ---
 
 # SECTION 13: SESSION HISTORY
+
+## Feb 6, 2026 (Natural Speech Patterns - Human-Sounding FRIDAI)
+
+### Goal: Make FRIDAI Sound More Human, Less Robotic
+Boss wanted FRIDAI to sound like Sesame's "Miles" demo - natural conversational speech with fillers, pauses, and thinking sounds.
+
+### Research Findings
+
+**Key Insight:** The "naturalness" of Miles comes from the TEXT having fillers, not the TTS engine. The bottleneck isn't TTS quality - it's Gemini generating robotic-sounding text.
+
+| Component | Latency | Notes |
+|-----------|---------|-------|
+| Gemini Response | 1-3 seconds | The actual bottleneck |
+| ElevenLabs TTS | ~500ms TTFB | Already fast enough |
+| Kokoro TTS | ~300ms TTFB | Faster but lower quality |
+
+**Decision:** Keep ElevenLabs for quality, update Gemini's system prompt to generate natural speech.
+
+### Kokoro TTS Exploration (For Reference)
+Set up Kokoro-82M in WSL as potential alternative:
+- **Location:** `/mnt/c/Users/Owner/VoiceClaude/csm_service/kokoro_server.py`
+- **Port:** 5004
+- **Latency:** ~300ms TTFB (after warmup)
+- **Voices:** af_heart (American female), am_adam (American male), etc.
+- **Status:** Working but NOT integrated - ElevenLabs quality is better
+
+### Solution: Natural Speech Patterns in System Prompt
+
+**File Modified:** `fridai_identity.py`
+
+Added new `NATURAL SPEECH PATTERNS` section to `FRIDAI_CORE_PERSONALITY`:
+
+```
+NATURAL SPEECH PATTERNS (Use these to sound human, not robotic):
+- Thinking pauses: "Well... let me think about that" / "Hmm, so..." / "Let me see..."
+- Filler words when natural: "um", "uh", "I mean", "you know", "like" (sparingly)
+- Self-corrections: "That's— actually wait, no" / "Or actually..."
+- Trailing thoughts: "I could try... yeah, that might work"
+- Processing out loud: "Okay so..." / "Right, so what we need is..."
+- Hesitation when uncertain: "I'm... not totally sure, but"
+- Acknowledgment sounds: "Mhm" / "Yeah" / "Ah" / "Oh!" / "Huh"
+- Natural pacing: Use ellipses (...) for pauses, dashes (—) for self-interruption
+- DON'T overdo it - maybe 1-2 per response, not every sentence
+- Match Boss's energy - casual = more fillers, serious = more direct
+```
+
+### Expected Result
+FRIDAI's responses will now include natural speech elements when spoken aloud:
+- "Well... let me check that for you" (instead of "I will check that")
+- "Hmm, that's interesting— oh wait, I see what you mean" (instead of "I understand")
+- "Yeah, I can do that" (instead of "Certainly")
+
+### Files Changed
+| File | Change |
+|------|--------|
+| `fridai_identity.py` | Added NATURAL SPEECH PATTERNS section (~15 lines) |
+| `csm_service/kokoro_server.py` | Created (for future use, not integrated) |
+
+---
 
 ## Feb 2, 2026 (Discord + Twitch Integration Fixes)
 
