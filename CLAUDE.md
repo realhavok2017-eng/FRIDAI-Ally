@@ -1188,6 +1188,86 @@ private const int BARGE_IN_SAMPLES_REQUIRED = 3;  // Sustained speech check
 
 ---
 
+## Feb 6, 2026 (Trigger Word Barge-In)
+
+### Feature: Trigger Words That Interrupt
+Added trigger word detection so you can interrupt FRIDAI even at lower volume levels. Just say "stop", "wait", "FRIDAI", etc. and she'll pause to listen.
+
+### Two-Tier Detection System
+| Tier | Threshold | Detection | Speed |
+|------|-----------|-----------|-------|
+| **High (Instant)** | 0.08 | Loud speech | Immediate |
+| **Low (Trigger Words)** | 0.03 | Quieter speech with keywords | ~1 second buffer |
+
+### Trigger Words (22 phrases)
+```
+stop, wait, hold on, hold up, pause, actually, never mind, nevermind,
+hey, fridai, friday, one sec, one second, hang on, shut up, quiet,
+listen, wait wait, stop stop, no no, okay okay, ok ok
+```
+
+### How It Works
+1. Mic detects audio above 0.03 threshold (quieter than instant barge-in)
+2. Buffers ~1 second of audio in `bargeInWordBuffer`
+3. Sends WAV to `/barge-in/transcribe` backend endpoint
+4. Whisper transcribes quickly (no voice ID, no dedup)
+5. Checks transcription for trigger words
+6. If found: calls `HandleBargeIn()` to stop playback
+
+### Implementation
+
+**AudioHandler.cs - New Fields:**
+```csharp
+private float bargeInWordThreshold = 0.03f;  // Lower threshold for trigger words
+private MemoryStream? bargeInWordBuffer;     // Buffer for word detection
+private DateTime bargeInWordBufferStart;
+private const int BARGE_IN_WORD_BUFFER_MS = 1000;  // 1 second buffer
+private bool bargeInWordCheckInProgress = false;
+private static readonly string[] TriggerWords = { ... };  // 22 phrases
+```
+
+**AudioHandler.cs - New Method:**
+```csharp
+private void CheckForTriggerWords(byte[] audioData)
+{
+    // Async POST to /barge-in/transcribe
+    // Check transcription for trigger words
+    // Call HandleBargeIn() if found
+}
+```
+
+**BackendClient.cs - New Method:**
+```csharp
+public async Task<string?> QuickTranscribe(byte[] audioData)
+{
+    // Convert raw PCM to WAV format
+    // POST to /barge-in/transcribe
+    // Return transcribed text
+}
+```
+
+**app.py - New Endpoint:**
+```python
+@app.route('/barge-in/transcribe', methods=['POST'])
+def barge_in_transcribe():
+    # Accept raw WAV audio
+    # Quick Whisper transcription (no voice ID, no dedup)
+    # Return {"text": "transcribed text"}
+```
+
+### Console Output
+```
+[BARGE-IN] Heard: "hold on a second" (no trigger word)
+[BARGE-IN] Trigger word detected: "wait" in "wait wait let me think"
+[BARGE-IN] Playback stopped, starting new capture
+```
+
+### Git Commits
+- `d0ef2f6` - Add /barge-in/transcribe endpoint (VoiceClaude)
+- `b136bad` - Add trigger word barge-in detection (FRIDAINative)
+
+---
+
 ## Feb 2, 2026 (Discord + Twitch Integration Fixes)
 
 ### Discord Bot Integration Fixes
