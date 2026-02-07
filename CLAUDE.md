@@ -1139,6 +1139,55 @@ FRIDAI's responses will now include natural speech elements when spoken aloud:
 
 ---
 
+## Feb 6, 2026 (Barge-In Support - Interrupt FRIDAI Mid-Speech)
+
+### Feature: Real Conversation Interruption
+You can now interrupt FRIDAI while she's speaking - just like a real conversation! Speak over her and she'll stop, listen to what you're saying, and respond to your new input.
+
+### How It Works
+1. **Separate Mic Monitor:** A second `WaveInEvent` listens to the mic during playback
+2. **Higher Threshold (0.08):** Avoids self-triggering from her own TTS output
+3. **Sustained Speech Detection:** Needs 3 consecutive samples above threshold (not just noise)
+4. **Immediate Response:** Stops playback, starts capturing your new input
+
+### Implementation Details (`AudioHandler.cs`)
+
+**New Fields Added:**
+```csharp
+private WaveInEvent? bargeInWaveIn;  // Separate mic for monitoring
+private bool bargeInEnabled = true;   // Toggle interruption support
+private float bargeInThreshold = 0.08f;  // Higher than VAD to avoid self-trigger
+private int bargeInSamplesAboveThreshold = 0;
+private const int BARGE_IN_SAMPLES_REQUIRED = 3;  // Sustained speech check
+```
+
+**New Methods:**
+| Method | Purpose |
+|--------|---------|
+| `StartBargeInMonitor()` | Starts mic monitoring when playback begins |
+| `StopBargeInMonitor()` | Cleans up when playback ends |
+| `BargeIn_DataAvailable()` | Detects speech during playback |
+| `HandleBargeIn()` | Stops playback, starts new capture |
+
+**Integration Points:**
+- `PlayAudio()` - Starts barge-in monitor
+- `StartStreamingPlayback()` - Starts barge-in monitor
+- `PlaybackStopped` handlers - Stops barge-in monitor
+- `FinishStreamingPlayback()` - Stops barge-in monitor
+- Error handlers - Cleanup on error
+
+### Console Output
+```
+[BARGE-IN] Monitoring started - speak to interrupt
+[BARGE-IN] Interruption detected! (level: 0.142)
+[BARGE-IN] Playback stopped, starting new capture
+```
+
+### Git Commit
+- `cf82dc1` - Add barge-in support - interrupt FRIDAI mid-speech
+
+---
+
 ## Feb 2, 2026 (Discord + Twitch Integration Fixes)
 
 ### Discord Bot Integration Fixes
