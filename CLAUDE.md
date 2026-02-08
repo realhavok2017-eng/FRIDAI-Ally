@@ -72,22 +72,23 @@ Create a natural, human-sounding voice clone for FRIDAI using ElevenLabs Profess
 4. **Merged into 30+ sec files** - 104 files in `samples_new_merged/` (57.6 min)
 5. **Deduplication done** - No overlap between original and new scripts
 6. **RunPod terminated** - No more cloud charges
-7. **TOTAL READY: 148 files, 92 minutes (1.5 hours)**
+7. **Final merge for ElevenLabs** - Combined 148 files → 57 files (under 100 limit)
+8. **READY FOR UPLOAD: 57 files, 85.4 minutes**
 
 ### ⏳ NEXT STEPS
-1. **Upload to ElevenLabs** - Professional Voice Clone page (both folders)
+1. **Upload to ElevenLabs** - Professional Voice Clone page
 2. **Train the clone** - ElevenLabs handles training
 3. **Update FRIDAI config** - Point to new voice ID
 
 ## Audio Inventory - READY FOR UPLOAD
 
-| Set | Files | Audio | Location |
-|-----|-------|-------|----------|
-| Original | 44 | 34.4 min | `voice_training/samples_merged/` |
-| New | 104 | 57.6 min | `voice_training/samples_new_merged/` |
-| **TOTAL** | **148** | **92 min (1.5 hrs)** | Both folders |
+| Location | Files | Duration |
+|----------|-------|----------|
+| `voice_training/samples_final/` | 57 | 85.4 min |
 
-✅ All 148 files are 30+ seconds each - ready for ElevenLabs Professional Voice Clone!
+✅ All 57 files are 30+ seconds each
+✅ Under ElevenLabs 100 file limit
+✅ Ready for Professional Voice Clone upload!
 
 ## Script Categories (Natural Speech)
 - Greetings & Farewells (100)
