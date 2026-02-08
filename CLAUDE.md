@@ -66,27 +66,28 @@ Create a natural, human-sounding voice clone for FRIDAI using ElevenLabs Profess
 ## Current Progress
 
 ### ✅ COMPLETED
-1. **Original samples generated** - 1,041 scripts → `samples/` folder
-2. **Merged into 30+ sec files** - 44 files in `samples_merged/` (34.4 min total)
-3. **New scripts created** - 1,925 unique scripts in `scripts_extended.py`
-4. **Batch generator built** - `batch_generate_tts.py` with auto-merge
+1. **Original samples generated** - 1,041 scripts → 44 merged files (34.4 min)
+2. **New scripts created** - 1,925 unique scripts in `scripts_extended.py`
+3. **New samples generated** - 1,925 TTS samples via ElevenLabs
+4. **Merged into 30+ sec files** - 104 files in `samples_new_merged/` (57.6 min)
 5. **Deduplication done** - No overlap between original and new scripts
 6. **RunPod terminated** - No more cloud charges
+7. **TOTAL READY: 148 files, 92 minutes (1.5 hours)**
 
 ### ⏳ NEXT STEPS
-1. **Generate new samples** - Run batch generator (~1,925 samples)
-2. **Auto-merge to 30+ sec** - Script handles this automatically
-3. **Upload to ElevenLabs** - Professional Voice Clone page
-4. **Train the clone** - ElevenLabs handles training
-5. **Update FRIDAI config** - Point to new voice ID
+1. **Upload to ElevenLabs** - Professional Voice Clone page (both folders)
+2. **Train the clone** - ElevenLabs handles training
+3. **Update FRIDAI config** - Point to new voice ID
 
-## Audio Inventory
+## Audio Inventory - READY FOR UPLOAD
 
-| Set | Scripts | Audio | Location |
-|-----|---------|-------|----------|
-| Original (done) | 1,041 | ~34 min | `voice_training/samples_merged/` |
-| New (to generate) | 1,925 | ~80 min | `voice_training/samples_new_merged/` |
-| **Combined** | **2,966** | **~114 min (~2 hrs)** | Both folders |
+| Set | Files | Audio | Location |
+|-----|-------|-------|----------|
+| Original | 44 | 34.4 min | `voice_training/samples_merged/` |
+| New | 104 | 57.6 min | `voice_training/samples_new_merged/` |
+| **TOTAL** | **148** | **92 min (1.5 hrs)** | Both folders |
+
+✅ All 148 files are 30+ seconds each - ready for ElevenLabs Professional Voice Clone!
 
 ## Script Categories (Natural Speech)
 - Greetings & Farewells (100)
