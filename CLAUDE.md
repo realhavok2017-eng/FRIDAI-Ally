@@ -1,6 +1,6 @@
 # FRIDAI - Complete Project Context
 
-## LAST UPDATED: February 8, 2026
+## LAST UPDATED: February 9, 2026
 
 ---
 
@@ -52,59 +52,429 @@ Contains:
 
 ---
 
-# 🎙️ IN PROGRESS: FRIDAI VOICE CLONE - ELEVENLABS PROFESSIONAL (Feb 8, 2026)
+# 🎙️ FRIDAI VOICE - CURRENT STATUS (Feb 8-9, 2026)
+
+## Current Active Voice
+- **Voice ID:** `1FtrXcVIXIqbhkqQ8Muf` (ElevenLabs Instant Voice Clone)
+- **Status:** WORKING - FRIDAI now uses her own cloned voice
+- **Base:** Rachel voice characteristics with FRIDAI personality
+
+## Previous Attempts Summary
+
+| Attempt | Result | Issue |
+|---------|--------|-------|
+| CSM-1B Training | ❌ FAILED | Codec architecture mismatch |
+| XTTS v2 Training | ❌ FAILED | Incompatible with Trainer class |
+| XTTS Zero-Shot | ❌ FAILED | Quality was terrible |
+| ElevenLabs Professional | ⚠️ BLOCKED | Voice verification requires matching voice |
+| Voicemeeter Routing | ❌ ABANDONED | Too janky, unreliable audio routing |
+| **ElevenLabs Instant** | ✅ WORKING | No verification needed, good quality |
+
+## Session Changes (Feb 8-9, 2026 Night)
+1. Abandoned Voicemeeter (uninstalled - was causing audio issues)
+2. Switched from Professional to Instant Voice Clone
+3. Updated `app.py` to use cloned voice ID: `1FtrXcVIXIqbhkqQ8Muf`
+4. Added "fridai" to AVAILABLE_VOICES dict
+5. FRIDAI output device set to "G06-BT" (Bluetooth headphones)
+6. Enhanced speech disfluencies in `fridai_identity.py`
+
+---
+
+# 🎯 NEXT: STYLETTS 2 TRAINING PLAN (State-of-the-Art Voice Clone)
 
 ## Goal
-Create a natural, human-sounding voice clone for FRIDAI using ElevenLabs Professional Voice Clone. "Like she's talking to me on the phone and it's hard to tell if it's a real person."
+Train a custom TTS model using StyleTTS 2 that captures FRIDAI's unique voice characteristics with natural disfluencies and emotional range. State-of-the-art quality that surpasses ElevenLabs.
 
-## Why ElevenLabs (Not Local Training)
-- **CSM-1B training failed** - Codec architecture mismatch issues
-- **XTTS v2 failed** - Incompatible with Trainer class
-- **XTTS zero-shot** - Quality was terrible
-- **ElevenLabs Professional** - Best quality, requires 30+ min audio, each sample must be 30+ seconds
+## Why StyleTTS 2
+| Model | Quality | Speed | Disfluency Support | Training |
+|-------|---------|-------|-------------------|----------|
+| XTTS v2 | Good | Slow | Limited | Complex |
+| VITS | Good | Fast | None | Medium |
+| Tortoise | Excellent | Very Slow | None | Complex |
+| **StyleTTS 2** | **Excellent** | **Fast** | **Yes (style transfer)** | **Medium** |
 
-## Current Progress (Updated Feb 8, 2026 Night Session)
+StyleTTS 2 advantages:
+- Uses style diffusion for natural variation
+- Supports prosody transfer (can learn natural rhythm/pauses)
+- Near real-time inference (<200ms)
+- Published paper with reproducible results
+- Active community and clear documentation
 
-### ✅ COMPLETED
-1. **Original samples** - 1,041 scripts in `expanded_scripts.py`
-2. **Extended scripts** - 1,925 scripts in `scripts_extended.py`
-3. **More scripts** - 555 scripts in `scripts_more.py`
-4. **Correction scripts** - 120 scripts in `scripts_corrections.py` (natural interruption responses)
-5. **All TTS generated** - 3,641 total audio samples via ElevenLabs Rachel voice
-6. **Mega merge complete** - 89 files, 145.1 minutes total
-7. **Uploaded to ElevenLabs** - All 89 files uploaded to Professional Voice Clone
+---
 
-### ⚠️ BLOCKED: Voice Verification Issue
-- ElevenLabs Professional Voice Clone requires voice verification
-- User must speak a phrase that MATCHES the uploaded samples
-- Since samples are TTS-generated (Rachel voice), user's voice doesn't match
-- **Attempted workaround:** Route FRIDAI's TTS through Voicemeeter to browser mic
-- **Status:** Voicemeeter routing configured but not yet working
+## PHASE 1: Environment Setup (RunPod)
 
-### 🔧 Voicemeeter Routing Setup (In Progress)
-Goal: Have FRIDAI speak the verification phrase through Voicemeeter so browser hears it as mic input.
-
-**FRIDAI Settings Changed:**
-```json
-"OutputDeviceName": "Voicemeeter Input (VB-Audio Voicemeeter VAIO)"
+### RunPod Configuration
+```
+GPU: RTX A5000 (24GB) or RTX 4090 (24GB) - $0.44-0.74/hr
+Storage: 100GB (for dataset + checkpoints)
+Template: PyTorch 2.1 + CUDA 12.1
+Python: 3.10 (NOT 3.14 - compatibility issues)
 ```
 
-**Voicemeeter Banana Config:**
-- Virtual Input strip: A1 + B1 enabled
-- Browser mic: Set to "Voicemeeter Out B1"
+### Initial Setup Script
+```bash
+# Clone StyleTTS 2
+git clone https://github.com/yl4579/StyleTTS2.git
+cd StyleTTS2
 
-**Next Steps:**
-1. Debug why FRIDAI audio isn't showing on Voicemeeter meters
-2. Once routing works, get verification phrase from ElevenLabs
-3. Have FRIDAI speak the phrase via chat/voice command
-4. Complete Professional Voice Clone verification
+# Create conda environment
+conda create -n styletts2 python=3.10 -y
+conda activate styletts2
 
-### Alternative: Instant Voice Clone
-- Tried uploading to Instant Voice Clone (no verification needed)
-- Hit 45-minute limit and 10MB per file limit
-- Uploaded files 001-025 (~32 minutes) as backup option
+# Install PyTorch with CUDA
+pip install torch==2.1.0 torchvision==0.16.0 torchaudio==2.1.0 --index-url https://download.pytorch.org/whl/cu121
 
-## Audio Inventory
+# Install dependencies
+pip install -r requirements.txt
+pip install phonemizer
+pip install librosa==0.9.2
+pip install scipy==1.10.1
+
+# Install espeak for phonemizer
+apt-get update && apt-get install -y espeak-ng
+
+# Download pretrained base model (LibriTTS)
+# This gives us a starting point, we fine-tune from here
+gdown --id 1K3jt1JEbtohBLUA0X75KLw36TW_m2AeN -O Models/LibriTTS/epochs_2nd_00020.pth
+```
+
+---
+
+## PHASE 2: Data Preparation
+
+### Audio Format Requirements
+```
+Format: WAV (16-bit PCM)
+Sample Rate: 24000 Hz (24kHz)
+Channels: Mono
+Duration: 1-15 seconds per clip (optimal: 5-10 sec)
+Total: Minimum 30 minutes, target 2+ hours
+```
+
+### Transcript Format (LJSpeech-style)
+```
+# metadata.csv format:
+# filename|transcript|normalized_transcript
+sample_0001|Well... let me think about that.|Well... let me think about that.
+sample_0002|Hmm, that's interesting— oh wait.|Hmm, that's interesting— oh wait.
+sample_0003|I mean, yeah, I can do that.|I mean, yeah, I can do that.
+```
+
+### Data Preparation Script
+```python
+# prepare_dataset.py
+import os
+import librosa
+import soundfile as sf
+from pathlib import Path
+
+INPUT_DIR = "voice_training/samples_upload/"  # Our 89 merged files
+OUTPUT_DIR = "styletts2_data/wavs/"
+METADATA_FILE = "styletts2_data/metadata.csv"
+
+def process_audio(input_path, output_path):
+    """Resample to 24kHz mono, split long files into clips."""
+    audio, sr = librosa.load(input_path, sr=24000, mono=True)
+
+    # Split into 10-second chunks with 1 second overlap
+    chunk_duration = 10  # seconds
+    overlap = 1  # seconds
+    chunk_samples = chunk_duration * 24000
+    hop_samples = (chunk_duration - overlap) * 24000
+
+    clips = []
+    for i in range(0, len(audio), hop_samples):
+        chunk = audio[i:i + chunk_samples]
+        if len(chunk) >= 3 * 24000:  # Minimum 3 seconds
+            clips.append(chunk)
+
+    return clips
+
+# Process all files and create metadata
+# (Full script would handle transcription alignment)
+```
+
+### Transcription Alignment
+We already have scripts with exact text. Need to:
+1. Split audio files at natural pauses
+2. Match each clip to its corresponding script line
+3. Use forced alignment (Montreal Forced Aligner or Whisper) for precision
+
+```bash
+# Install Montreal Forced Aligner
+conda install -c conda-forge montreal-forced-aligner
+
+# Download English acoustic model
+mfa model download acoustic english_us_arpa
+mfa model download dictionary english_us_arpa
+
+# Align audio to transcripts
+mfa align styletts2_data/wavs styletts2_data/transcripts english_us_arpa english_us_arpa styletts2_data/aligned
+```
+
+---
+
+## PHASE 3: Disfluency Integration
+
+### Disfluency Datasets (From Miles/Sesame Research)
+
+| Dataset | Content | Size | Usage |
+|---------|---------|------|-------|
+| FluencyBank | Stuttering/disfluent speech | 4000+ clips | Primary disfluency source |
+| CASPER | Conversational speech with repairs | 2500+ clips | Self-correction patterns |
+| Disfluency Speech Dataset | Filled pauses (um, uh) | 1000+ clips | Filler patterns |
+| CASTLE | Speech with hesitations | 3000+ clips | Thinking pauses |
+
+### Processing Disfluency Data
+```bash
+# Download FluencyBank (requires registration)
+# https://fluency.talkbank.org/access/
+
+# Download LibriTTS for natural speech baseline
+wget https://www.openslr.org/resources/60/train-clean-100.tar.gz
+tar -xzf train-clean-100.tar.gz
+```
+
+### Mixing Strategy
+```
+70% - FRIDAI samples (our 145 minutes of TTS)
+20% - Natural speech (LibriTTS subset with similar voice characteristics)
+10% - Disfluency samples (FluencyBank + CASPER)
+```
+
+---
+
+## PHASE 4: Training Configuration
+
+### Config File (`config_fridai.yml`)
+```yaml
+# StyleTTS 2 Fine-tuning Config for FRIDAI
+
+# Data paths
+data_params:
+  train_data: "Data/train_list.txt"
+  val_data: "Data/val_list.txt"
+  root_path: ""
+  OOD_data: "Data/OOD_texts.txt"
+  min_length: 50
+
+# Audio processing
+preprocess_params:
+  sr: 24000
+  spect_params:
+    n_fft: 2048
+    win_length: 1200
+    hop_length: 300
+    n_mels: 80
+
+# Model architecture (keep defaults, we're fine-tuning)
+model_params:
+  multispeaker: false  # Single speaker (FRIDAI)
+  dim_in: 64
+  hidden_dim: 512
+  max_conv_dim: 512
+  n_layer: 3
+  n_mels: 80
+
+# Training parameters
+loss_params:
+  lambda_mel: 5.0
+  lambda_gen: 1.0
+  lambda_slm: 1.0
+  lambda_mono: 1.0
+  lambda_s2s: 1.0
+  lambda_F0: 1.0
+  lambda_norm: 1.0
+  lambda_dur: 1.0
+  lambda_ce: 20.0
+  lambda_sty: 1.0
+  lambda_diff: 1.0
+
+# Optimizer
+optimizer_params:
+  lr: 0.0001  # Lower LR for fine-tuning
+
+# Training schedule
+training_params:
+  epochs_1st: 50   # First stage (text-to-mel)
+  epochs_2nd: 20   # Second stage (diffusion)
+  batch_size: 8    # Adjust based on GPU VRAM
+  save_freq: 5     # Save checkpoint every 5 epochs
+  log_interval: 10
+```
+
+### Training Commands
+```bash
+# Stage 1: Text-to-Speech Training
+accelerate launch train_first.py \
+    --config_path ./Configs/config_fridai.yml \
+    --checkpoint Models/LibriTTS/epochs_2nd_00020.pth
+
+# Stage 2: Diffusion Style Training
+accelerate launch train_second.py \
+    --config_path ./Configs/config_fridai.yml \
+    --checkpoint Models/FRIDAI/epochs_1st_00050.pth
+```
+
+### Expected Training Time
+```
+Stage 1 (50 epochs): ~4-6 hours on A5000
+Stage 2 (20 epochs): ~2-3 hours on A5000
+Total: ~6-9 hours
+Cost: ~$5-7 on RunPod
+```
+
+---
+
+## PHASE 5: Integration with FRIDAI Backend
+
+### Export Model
+```bash
+# After training, export for inference
+python export_model.py \
+    --checkpoint Models/FRIDAI/epochs_2nd_00020.pth \
+    --output Models/FRIDAI/fridai_final.pth
+```
+
+### Inference Server (`styletts2_server.py`)
+```python
+# Location: C:\Users\Owner\VoiceClaude\styletts2_service\server.py
+
+from flask import Flask, request, Response
+import torch
+import io
+import soundfile as sf
+
+app = Flask(__name__)
+
+# Load model on startup
+model = load_styletts2_model("Models/FRIDAI/fridai_final.pth")
+
+@app.route('/synthesize', methods=['POST'])
+def synthesize():
+    data = request.json
+    text = data.get('text', '')
+
+    # Generate audio
+    audio = model.inference(text)
+
+    # Convert to bytes
+    buffer = io.BytesIO()
+    sf.write(buffer, audio, 24000, format='wav')
+    buffer.seek(0)
+
+    return Response(buffer.read(), mimetype='audio/wav')
+
+@app.route('/health', methods=['GET'])
+def health():
+    return {"status": "ok", "model": "StyleTTS2-FRIDAI"}
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5005)
+```
+
+### Backend Integration (`app.py` Changes)
+```python
+# Add StyleTTS 2 as TTS provider option
+TTS_PROVIDERS = {
+    "elevenlabs": elevenlabs_tts,
+    "styletts2": styletts2_tts,  # NEW
+}
+
+async def styletts2_tts(text: str) -> bytes:
+    """Generate TTS using local StyleTTS 2 model."""
+    response = requests.post(
+        "http://localhost:5005/synthesize",
+        json={"text": text},
+        timeout=10
+    )
+    return response.content
+```
+
+---
+
+## PHASE 6: Quality Validation
+
+### Metrics to Track
+```
+MOS (Mean Opinion Score): Target > 4.0
+Naturalness: Subjective listening tests
+Disfluency Accuracy: Does "um" sound natural?
+Latency: Target < 200ms TTFB
+Character Consistency: Does it sound like FRIDAI?
+```
+
+### Test Prompts (Include Disfluencies)
+```
+1. "Well... let me think about that for a second."
+2. "Hmm, that's interesting— oh wait, I see what you mean now."
+3. "I mean, yeah, I can definitely do that for you."
+4. "So the thing is— actually, let me rephrase that."
+5. "Okay so... right, I've got it figured out."
+```
+
+### A/B Testing
+```
+Compare:
+1. Current ElevenLabs Instant Clone
+2. New StyleTTS 2 model
+3. Original Rachel voice (baseline)
+
+Blind listening test with Boss to choose winner.
+```
+
+---
+
+## TIMELINE
+
+| Phase | Duration | Cost |
+|-------|----------|------|
+| Environment Setup | 30 min | $0.25 |
+| Data Preparation | 2-3 hours | Local |
+| Disfluency Integration | 1-2 hours | Local |
+| Training | 6-9 hours | $5-7 |
+| Testing & Tuning | 2-3 hours | $1-2 |
+| **Total** | **~15 hours** | **~$8** |
+
+---
+
+## FILES TO CREATE
+
+| File | Location | Purpose |
+|------|----------|---------|
+| `prepare_dataset.py` | `voice_training/` | Process audio for training |
+| `align_transcripts.py` | `voice_training/` | Force-align audio to text |
+| `config_fridai.yml` | RunPod | Training configuration |
+| `styletts2_server.py` | `styletts2_service/` | Local inference server |
+| `test_styletts2.py` | `voice_training/` | Quality validation |
+
+---
+
+## NEXT SESSION TODO
+
+1. [ ] Set up RunPod instance with StyleTTS 2
+2. [ ] Prepare FRIDAI dataset (split audio, align transcripts)
+3. [ ] Download disfluency datasets (FluencyBank, CASPER)
+4. [ ] Configure training (config_fridai.yml)
+5. [ ] Run training (Stage 1 + Stage 2)
+6. [ ] Export model and set up local inference server
+7. [ ] A/B test against ElevenLabs
+8. [ ] If quality good: Switch FRIDAI to StyleTTS 2
+
+---
+
+## FALLBACK OPTIONS
+
+If StyleTTS 2 fails:
+1. **Zonos** - Newer model, may have better results
+2. **Fish Speech** - Good quality, simpler setup
+3. **Fine-tune ElevenLabs** - Use their API fine-tuning ($$)
+4. **Keep Instant Clone** - Current working solution
+
+---
+
+## Audio Assets (Still Available)
 
 | Location | Files | Duration | Status |
 |----------|-------|----------|--------|
