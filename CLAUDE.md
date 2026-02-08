@@ -63,79 +63,108 @@ Create a natural, human-sounding voice clone for FRIDAI using ElevenLabs Profess
 - **XTTS zero-shot** - Quality was terrible
 - **ElevenLabs Professional** - Best quality, requires 30+ min audio, each sample must be 30+ seconds
 
-## Current Progress
+## Current Progress (Updated Feb 8, 2026 Night Session)
 
 ### ✅ COMPLETED
-1. **Original samples generated** - 1,041 scripts → 44 merged files (34.4 min)
-2. **New scripts created** - 1,925 unique scripts in `scripts_extended.py`
-3. **New samples generated** - 1,925 TTS samples via ElevenLabs
-4. **Merged into 30+ sec files** - 104 files in `samples_new_merged/` (57.6 min)
-5. **Deduplication done** - No overlap between original and new scripts
-6. **RunPod terminated** - No more cloud charges
-7. **Final merge for ElevenLabs** - Combined 148 files → 57 files (under 100 limit)
-8. **READY FOR UPLOAD: 57 files, 85.4 minutes**
+1. **Original samples** - 1,041 scripts in `expanded_scripts.py`
+2. **Extended scripts** - 1,925 scripts in `scripts_extended.py`
+3. **More scripts** - 555 scripts in `scripts_more.py`
+4. **Correction scripts** - 120 scripts in `scripts_corrections.py` (natural interruption responses)
+5. **All TTS generated** - 3,641 total audio samples via ElevenLabs Rachel voice
+6. **Mega merge complete** - 89 files, 145.1 minutes total
+7. **Uploaded to ElevenLabs** - All 89 files uploaded to Professional Voice Clone
 
-### ⏳ NEXT STEPS
-1. **Upload to ElevenLabs** - Professional Voice Clone page
-2. **Train the clone** - ElevenLabs handles training
-3. **Update FRIDAI config** - Point to new voice ID
+### ⚠️ BLOCKED: Voice Verification Issue
+- ElevenLabs Professional Voice Clone requires voice verification
+- User must speak a phrase that MATCHES the uploaded samples
+- Since samples are TTS-generated (Rachel voice), user's voice doesn't match
+- **Attempted workaround:** Route FRIDAI's TTS through Voicemeeter to browser mic
+- **Status:** Voicemeeter routing configured but not yet working
 
-## Audio Inventory - READY FOR UPLOAD
+### 🔧 Voicemeeter Routing Setup (In Progress)
+Goal: Have FRIDAI speak the verification phrase through Voicemeeter so browser hears it as mic input.
 
-| Location | Files | Duration |
-|----------|-------|----------|
-| `voice_training/samples_final/` | 57 | 85.4 min |
-
-✅ All 57 files are 30+ seconds each
-✅ Under ElevenLabs 100 file limit
-✅ Ready for Professional Voice Clone upload!
-
-## Script Categories (Natural Speech)
-- Greetings & Farewells (100)
-- Excitement & Joy (150)
-- Thinking & Processing (150)
-- Concern & Worry (100)
-- Humor & Playfulness (100)
-- Technical Explanations (200)
-- Gaming Commentary (150)
-- Questions (150)
-- Casual Conversation (200)
-- Frustration (100)
-- Reactions (150)
-- Long Sentences (200)
-- **Natural Speech Elements** (~190) - *chuckles*, *sighs*, "um", "uh", hesitations
-
-## How to Generate Remaining Samples
-
-```batch
-cd C:\Users\Owner\VoiceClaude\voice_training
-
-# Generate all new samples + auto-merge to 30+ sec files
-"C:\Python314\python.exe" batch_generate_tts.py --all
-
-# Or just check progress
-"C:\Python314\python.exe" batch_generate_tts.py --check
-
-# Or just merge existing samples
-"C:\Python314\python.exe" batch_generate_tts.py --merge
+**FRIDAI Settings Changed:**
+```json
+"OutputDeviceName": "Voicemeeter Input (VB-Audio Voicemeeter VAIO)"
 ```
+
+**Voicemeeter Banana Config:**
+- Virtual Input strip: A1 + B1 enabled
+- Browser mic: Set to "Voicemeeter Out B1"
+
+**Next Steps:**
+1. Debug why FRIDAI audio isn't showing on Voicemeeter meters
+2. Once routing works, get verification phrase from ElevenLabs
+3. Have FRIDAI speak the phrase via chat/voice command
+4. Complete Professional Voice Clone verification
+
+### Alternative: Instant Voice Clone
+- Tried uploading to Instant Voice Clone (no verification needed)
+- Hit 45-minute limit and 10MB per file limit
+- Uploaded files 001-025 (~32 minutes) as backup option
+
+## Audio Inventory
+
+| Location | Files | Duration | Status |
+|----------|-------|----------|--------|
+| `voice_training/samples/` | 1,041 | ~17 min | Original samples |
+| `voice_training/samples_new/` | 1,925 | ~32 min | Extended samples |
+| `voice_training/samples_more/` | 555 | ~9 min | More variety |
+| `voice_training/samples_corrections/` | 120 | ~2 min | Interruption responses |
+| `voice_training/samples_upload/` | 89 | 145.1 min | **MERGED FOR UPLOAD** |
+
+## Script Categories
+- Greetings & Farewells
+- Excitement & Joy
+- Thinking & Processing
+- Concern & Worry
+- Humor & Playfulness
+- Technical Explanations
+- Gaming Commentary
+- Questions & Curiosity
+- Casual Conversation
+- Frustration & Annoyance
+- Reactions & Exclamations
+- Long Complex Sentences
+- Natural Speech Elements (*chuckles*, *sighs*, "um", "uh")
+- **Corrections/Interruptions** - "Oh wait, you're right", "Let me fix that", etc.
 
 ## Key Files
 
 | File | Purpose |
 |------|---------|
 | `voice_training/expanded_scripts.py` | Original 1,041 scripts |
-| `voice_training/scripts_extended.py` | New 1,925 unique scripts |
-| `voice_training/batch_generate_tts.py` | Batch generator + merger |
-| `voice_training/samples_merged/` | 44 ready files (34 min) |
-| `voice_training/samples_new_merged/` | Output for new samples |
+| `voice_training/scripts_extended.py` | 1,925 unique scripts |
+| `voice_training/scripts_more.py` | 555 additional scripts |
+| `voice_training/scripts_corrections.py` | 120 correction/interruption scripts |
+| `voice_training/batch_generate_tts.py` | TTS batch generator |
+| `voice_training/batch_generate_more.py` | Generator for scripts_more |
+| `voice_training/batch_generate_corrections.py` | Generator for corrections |
+| `voice_training/mega_merge.py` | Combines all samples into 30+ sec files |
+| `voice_training/samples_upload/` | Final merged files for ElevenLabs |
+
+## Commands
+
+```batch
+cd C:\Users\Owner\VoiceClaude\voice_training
+
+# Generate more samples
+"C:\Python314\python.exe" batch_generate_more.py
+
+# Generate correction samples
+"C:\Python314\python.exe" batch_generate_corrections.py
+
+# Merge ALL samples into upload-ready files
+"C:\Python314\python.exe" mega_merge.py
+```
 
 ## ElevenLabs Requirements
-- Each sample must be **30+ seconds**
-- Total audio should be **30+ minutes** (we have ~2 hours planned)
-- Clean audio, no background noise
-- Consistent voice (Rachel/FRIDAI voice)
-- Include natural speech patterns (breaths, pauses, fillers)
+- Each sample must be **30+ seconds** ✅
+- Under **100 files** ✅ (89 files)
+- Total audio **30+ minutes** ✅ (145 minutes)
+- Clean audio, no background noise ✅
+- Consistent voice (Rachel/FRIDAI voice) ✅
 
 ---
 
