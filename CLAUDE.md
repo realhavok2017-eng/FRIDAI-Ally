@@ -80,6 +80,50 @@ Contains:
 
 ---
 
+# 🚀 STYLETTS 2 TRAINING - IN PROGRESS (Feb 8, 2026)
+
+## Phase 1: Local Data Preparation - COMPLETE ✅
+
+**Script Created:** `voice_training/prepare_styletts2_data.py`
+
+**What It Does:**
+1. Reads 1,041 WAV files from `voice_training/samples/`
+2. Resamples from 16kHz → 24kHz (StyleTTS 2 requirement)
+3. Creates metadata files in StyleTTS 2 format
+4. Splits 90% train / 10% validation
+
+**Output Created:** `C:/Users/Owner/VoiceClaude/styletts2_data/`
+```
+styletts2_data/
+├── wavs/           # 1,041 files at 24kHz mono
+├── train_list.txt  # 936 entries (format: filename|text|FRIDAI)
+├── val_list.txt    # 105 entries
+└── OOD_texts.txt   # 20 test sentences
+```
+
+**Stats:**
+- Total samples: 1,041
+- Total duration: 34.4 minutes
+- Zip file: `styletts2_data.zip` (78.7 MB) - Ready for upload
+
+## Next Steps (Feb 8)
+1. [ ] Start RunPod instance (RTX A5000 or 4090)
+2. [ ] Upload styletts2_data.zip
+3. [ ] Clone StyleTTS 2 repo and install dependencies
+4. [ ] Configure training (config_fridai.yml)
+5. [ ] Run Stage 1 training (~4-6 hours)
+6. [ ] Run Stage 2 training (~2-3 hours)
+
+## Future Enhancement: Miles-Level Instant Reply
+Current architecture has ~3-5s latency. Miles (Sesame) achieves ~200-500ms through:
+- Streaming ASR + Streaming LLM + Streaming TTS
+- Interleaved generation (thinking tokens + speech tokens)
+- Real-time chunk-by-chunk TTS
+
+This is a separate project after voice quality is solved.
+
+---
+
 # 🎯 NEXT: STYLETTS 2 TRAINING PLAN (State-of-the-Art Voice Clone)
 
 ## Goal
