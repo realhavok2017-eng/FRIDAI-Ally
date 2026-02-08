@@ -1,6 +1,6 @@
 # FRIDAI - Complete Project Context
 
-## LAST UPDATED: February 7, 2026
+## LAST UPDATED: February 8, 2026
 
 ---
 
@@ -49,6 +49,91 @@ Contains:
 2. Mid-response say "oh wait, also check the weather"
 3. FRIDAI should say "Oh sure, I'll check that too" and handle both
 4. Saying "stop" or "nevermind" should abandon and switch topics
+
+---
+
+# 🎙️ IN PROGRESS: FRIDAI VOICE CLONE - ELEVENLABS PROFESSIONAL (Feb 8, 2026)
+
+## Goal
+Create a natural, human-sounding voice clone for FRIDAI using ElevenLabs Professional Voice Clone. "Like she's talking to me on the phone and it's hard to tell if it's a real person."
+
+## Why ElevenLabs (Not Local Training)
+- **CSM-1B training failed** - Codec architecture mismatch issues
+- **XTTS v2 failed** - Incompatible with Trainer class
+- **XTTS zero-shot** - Quality was terrible
+- **ElevenLabs Professional** - Best quality, requires 30+ min audio, each sample must be 30+ seconds
+
+## Current Progress
+
+### ✅ COMPLETED
+1. **Original samples generated** - 1,041 scripts → `samples/` folder
+2. **Merged into 30+ sec files** - 44 files in `samples_merged/` (34.4 min total)
+3. **New scripts created** - 1,925 unique scripts in `scripts_extended.py`
+4. **Batch generator built** - `batch_generate_tts.py` with auto-merge
+5. **Deduplication done** - No overlap between original and new scripts
+6. **RunPod terminated** - No more cloud charges
+
+### ⏳ NEXT STEPS
+1. **Generate new samples** - Run batch generator (~1,925 samples)
+2. **Auto-merge to 30+ sec** - Script handles this automatically
+3. **Upload to ElevenLabs** - Professional Voice Clone page
+4. **Train the clone** - ElevenLabs handles training
+5. **Update FRIDAI config** - Point to new voice ID
+
+## Audio Inventory
+
+| Set | Scripts | Audio | Location |
+|-----|---------|-------|----------|
+| Original (done) | 1,041 | ~34 min | `voice_training/samples_merged/` |
+| New (to generate) | 1,925 | ~80 min | `voice_training/samples_new_merged/` |
+| **Combined** | **2,966** | **~114 min (~2 hrs)** | Both folders |
+
+## Script Categories (Natural Speech)
+- Greetings & Farewells (100)
+- Excitement & Joy (150)
+- Thinking & Processing (150)
+- Concern & Worry (100)
+- Humor & Playfulness (100)
+- Technical Explanations (200)
+- Gaming Commentary (150)
+- Questions (150)
+- Casual Conversation (200)
+- Frustration (100)
+- Reactions (150)
+- Long Sentences (200)
+- **Natural Speech Elements** (~190) - *chuckles*, *sighs*, "um", "uh", hesitations
+
+## How to Generate Remaining Samples
+
+```batch
+cd C:\Users\Owner\VoiceClaude\voice_training
+
+# Generate all new samples + auto-merge to 30+ sec files
+"C:\Python314\python.exe" batch_generate_tts.py --all
+
+# Or just check progress
+"C:\Python314\python.exe" batch_generate_tts.py --check
+
+# Or just merge existing samples
+"C:\Python314\python.exe" batch_generate_tts.py --merge
+```
+
+## Key Files
+
+| File | Purpose |
+|------|---------|
+| `voice_training/expanded_scripts.py` | Original 1,041 scripts |
+| `voice_training/scripts_extended.py` | New 1,925 unique scripts |
+| `voice_training/batch_generate_tts.py` | Batch generator + merger |
+| `voice_training/samples_merged/` | 44 ready files (34 min) |
+| `voice_training/samples_new_merged/` | Output for new samples |
+
+## ElevenLabs Requirements
+- Each sample must be **30+ seconds**
+- Total audio should be **30+ minutes** (we have ~2 hours planned)
+- Clean audio, no background noise
+- Consistent voice (Rachel/FRIDAI voice)
+- Include natural speech patterns (breaths, pauses, fillers)
 
 ---
 
