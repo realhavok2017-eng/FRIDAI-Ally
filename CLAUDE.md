@@ -114,13 +114,85 @@ styletts2_data/
 5. [ ] Run Stage 1 training (~4-6 hours)
 6. [ ] Run Stage 2 training (~2-3 hours)
 
-## Future Enhancement: Miles-Level Instant Reply
-Current architecture has ~3-5s latency. Miles (Sesame) achieves ~200-500ms through:
-- Streaming ASR + Streaming LLM + Streaming TTS
-- Interleaved generation (thinking tokens + speech tokens)
-- Real-time chunk-by-chunk TTS
+---
 
-This is a separate project after voice quality is solved.
+# 🚀 NEXT: MILES-LEVEL INSTANT REPLY (After StyleTTS 2 Training)
+
+## Goal
+Reduce FRIDAI's voice response latency from **1.3-1.6 seconds** to **200-500ms** (Miles/Sesame-level).
+
+## Current Pipeline Analysis
+
+| Stage | Current Implementation | Latency |
+|-------|----------------------|---------|
+| ASR | Deepgram REST (blocking) | 100-500ms |
+| LLM | Gemini (streaming, but sentence-level) | 500-1000ms |
+| TTS | ElevenLabs (sentence streaming) | 200-500ms TTFB |
+| Native Buffer | 16KB threshold before playback | 200-400ms |
+| **Total** | Sequential pipeline | **1.3-1.6s** |
+
+## Target Pipeline (Parallel + Streaming)
+
+```
+User speaks → [Streaming ASR] ─┐
+                               ├→ [Filler while thinking] → Play "Hmm..."
+              [Partial transcript]→ [LLM starts generating]
+                               ↓
+              [First 3 words] → [Phrase TTS] → [2KB buffer] → PLAY
+```
+
+## New Files to Create
+
+```
+streaming/
+├── __init__.py
+├── websocket_handler.py    # Central WebSocket server (ws://localhost:5000/stream)
+├── deepgram_stream.py      # Deepgram WebSocket ASR client
+├── filler_generator.py     # Pre-cached filler audio ("Hmm...", "Let me see...")
+└── phrase_tts.py           # Sub-sentence TTS streaming
+```
+
+## Implementation Phases
+
+1. **Phase 1A: Reduce buffer threshold** (Quick win)
+   - Change AudioHandler.cs: 16384 → 2048
+   - Immediate ~200ms improvement
+
+2. **Phase 1B: Backend WebSocket** (Core infrastructure)
+   - Create `streaming/` module
+   - WebSocket endpoint in app.py
+   - Deepgram streaming ASR
+
+3. **Phase 2: Filler generation** (Natural feeling)
+   - Pre-cache filler audio
+   - Play during LLM thinking
+
+4. **Phase 3: Phrase-level TTS** (Main latency reduction)
+   - Sub-sentence TTS streaming
+   - 3-word minimum phrase boundaries
+
+5. **Phase 4: Native WebSocket** (Full pipeline)
+   - WebSocket client in native app
+   - Bidirectional audio streaming
+
+## Expected Latency Improvement
+
+| Component | Before | After |
+|-----------|--------|-------|
+| ASR | 100-500ms (blocking) | 50-100ms (streaming) |
+| Filler | N/A | Immediate (<50ms) |
+| LLM | 500-1000ms (sentence) | 200-400ms (phrase) |
+| TTS | 200-500ms TTFB | 100-200ms (phrase) |
+| Buffer | 200-400ms (16KB) | 50-100ms (2KB) |
+| **Total** | **1.3-1.6s** | **200-500ms** |
+
+## Critical Files to Modify
+
+| File | Changes |
+|------|---------|
+| `app.py` | Add WebSocket endpoint, streaming V2V mode |
+| `AudioHandler.cs` | Reduce buffer 16KB→2KB, add WebSocket mode |
+| `BackendClient.cs` | Add WebSocket connection method |
 
 ---
 
