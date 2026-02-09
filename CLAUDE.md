@@ -165,17 +165,37 @@ Interrupt FRIDAI mid-response with "oh wait, also X" and she handles BOTH tasks.
 
 ---
 
-# 🚀 NEXT: MILES-LEVEL INSTANT REPLY
+# 🚀 MILES-LEVEL INSTANT REPLY - IN PROGRESS (Feb 9, 2026)
 
 **Goal:** Reduce latency from 1.3-1.6s to 200-500ms
 
-| Phase | Change |
-|-------|--------|
-| 1A | Reduce buffer 16KB→2KB (AudioHandler.cs) |
-| 1B | WebSocket streaming ASR |
-| 2 | Filler audio during LLM thinking |
-| 3 | Phrase-level TTS (3-word chunks) |
-| 4 | Native WebSocket client |
+| Phase | Change | Status |
+|-------|--------|--------|
+| 1A | Reduce buffer 16KB→2KB (AudioHandler.cs) | ✅ DONE |
+| 1B | WebSocket streaming ASR | ✅ DONE |
+| 2 | Filler audio during LLM thinking | ✅ DONE |
+| 3 | Phrase-level TTS (3-word chunks) | ✅ DONE |
+| 4 | Native WebSocket client | ⏳ TODO |
+
+### New Streaming Module (Feb 9, 2026)
+**Location:** `streaming/`
+
+| File | Purpose |
+|------|---------|
+| `websocket_handler.py` | Central WebSocket endpoint at `/stream/voice` |
+| `deepgram_stream.py` | Deepgram WebSocket streaming ASR |
+| `filler_generator.py` | Pre-cached filler audio ("Hmm...", "Let me see...") |
+| `phrase_tts.py` | Sub-sentence TTS (3-word chunks) |
+
+### Latency Breakdown (Target vs Current)
+| Component | Before | After |
+|-----------|--------|-------|
+| ASR | 100-500ms (REST) | 50-100ms (WebSocket) |
+| Filler | N/A | <50ms (pre-cached) |
+| LLM | 500-1000ms (sentence) | 200-400ms (phrase) |
+| TTS | 200-500ms TTFB | 100-200ms (phrase) |
+| Buffer | 200-400ms (16KB) | 50-100ms (2KB) |
+| **Total** | **1.3-1.6s** | **200-500ms** |
 
 ---
 
