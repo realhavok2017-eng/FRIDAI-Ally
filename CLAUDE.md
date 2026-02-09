@@ -132,6 +132,21 @@ CUDA_LAUNCH_BLOCKING=1 python train_first.py --config_path Configs/config_fridai
 | Wrong paths | `soundfile.LibsndfileError` | Fix root_path in config |
 | PyTorch weights_only | Security error | Add `weights_only=False` |
 | Training freeze | OOD prints then hang | `CUDA_LAUNCH_BLOCKING=1` |
+| Disk quota exceeded | Crash at epoch 19, sed fails | Delete unused files (see below) |
+
+### Disk Quota Fix (Feb 9, 2026)
+Training crashed at Epoch 19 with `PytorchStreamWriter failed` and `sed: Disk quota exceeded`.
+**Note:** Disk SPACE was fine (381TB available) but RunPod QUOTA was exceeded.
+
+**Files deleted to fix (~5.5GB freed):**
+```bash
+rm -f Models/LibriTTS/epochs_2nd_00020.pth  # 1.4GB pretrained (no longer needed after load)
+rm -rf /workspace/tts_env                    # 5.3GB old venv
+rm -f /workspace/styletts2_data.zip         # 79M (already extracted)
+rm -rf /workspace/xtts_dataset              # 68M old data
+rm -rf /workspace/fridai_xtts_output        # 2M old output
+rm -f /workspace/fridai_voice_training.zip  # 49M already extracted
+```
 
 ### After Stage 1 Completes
 ```bash
@@ -175,10 +190,10 @@ Interrupt FRIDAI mid-response with "oh wait, also X" and she handles BOTH tasks.
 | 1B | WebSocket streaming ASR | ✅ DONE |
 | 2 | Filler audio during LLM thinking | ✅ DONE |
 | 3 | Phrase-level TTS (3-word chunks) | ✅ DONE |
-| 4 | Native WebSocket client | ⏳ TODO |
+| 4 | Native WebSocket client | ✅ DONE |
 
 ### New Streaming Module (Feb 9, 2026)
-**Location:** `streaming/`
+**Backend (Python):** `streaming/`
 
 | File | Purpose |
 |------|---------|
@@ -186,6 +201,13 @@ Interrupt FRIDAI mid-response with "oh wait, also X" and she handles BOTH tasks.
 | `deepgram_stream.py` | Deepgram WebSocket streaming ASR |
 | `filler_generator.py` | Pre-cached filler audio ("Hmm...", "Let me see...") |
 | `phrase_tts.py` | Sub-sentence TTS (3-word chunks) |
+
+**Native App (C#):** `FRIDAINative/`
+
+| File | Purpose |
+|------|---------|
+| `StreamingVoiceClient.cs` | WebSocket client for bidirectional voice streaming |
+| `AudioHandler.cs` | Added `UseWebSocketStreaming` mode + real-time chunk sending |
 
 ### Latency Breakdown (Target vs Current)
 | Component | Before | After |
