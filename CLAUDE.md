@@ -80,23 +80,17 @@ Contains:
 
 ---
 
-# 🚀 STYLETTS 2 TRAINING - IN PROGRESS (Feb 8, 2026)
+# 🚀 STYLETTS 2 TRAINING - IN PROGRESS (Feb 8-9, 2026)
 
 ## Phase 1: Local Data Preparation - COMPLETE ✅
 
 **Script Created:** `voice_training/prepare_styletts2_data.py`
 
-**What It Does:**
-1. Reads 1,041 WAV files from `voice_training/samples/`
-2. Resamples from 16kHz → 24kHz (StyleTTS 2 requirement)
-3. Creates metadata files in StyleTTS 2 format
-4. Splits 90% train / 10% validation
-
 **Output Created:** `C:/Users/Owner/VoiceClaude/styletts2_data/`
 ```
 styletts2_data/
 ├── wavs/           # 1,041 files at 24kHz mono
-├── train_list.txt  # 936 entries (format: filename|text|FRIDAI)
+├── train_list.txt  # 936 entries (format: filename|text|0)
 ├── val_list.txt    # 105 entries
 └── OOD_texts.txt   # 20 test sentences
 ```
@@ -104,15 +98,93 @@ styletts2_data/
 **Stats:**
 - Total samples: 1,041
 - Total duration: 34.4 minutes
-- Zip file: `styletts2_data.zip` (78.7 MB) - Ready for upload
+- Zip file: `styletts2_data.zip` (78.7 MB)
 
-## Next Steps (Feb 8)
-1. [ ] Start RunPod instance (RTX A5000 or 4090)
-2. [ ] Upload styletts2_data.zip
-3. [ ] Clone StyleTTS 2 repo and install dependencies
-4. [ ] Configure training (config_fridai.yml)
-5. [ ] Run Stage 1 training (~4-6 hours)
-6. [ ] Run Stage 2 training (~2-3 hours)
+## Phase 2: RunPod Training - RUNNING! ✅
+
+### RunPod Setup
+- **GPU:** A100 80GB
+- **Instance:** env@4315e544aa64
+- **Cost:** ~$2/hr
+
+### Complete Setup Commands (What Actually Worked)
+
+```bash
+# 1. Clone StyleTTS 2
+cd /workspace
+git clone https://github.com/yl4579/StyleTTS2.git
+cd StyleTTS2
+
+# 2. Fix Windows line endings (CRITICAL if uploading from Windows)
+sed -i 's/\r$//' Configs/*.yml
+
+# 3. Install dependencies
+pip install -r requirements.txt
+pip install phonemizer librosa==0.9.2 scipy==1.10.1 gdown pandas tensorboard
+apt-get update && apt-get install -y espeak-ng unzip
+
+# 4. Download pretrained model (use wget, NOT gdown - Google Drive blocks it)
+mkdir -p Models/LibriTTS
+wget -O Models/LibriTTS/epochs_2nd_00020.pth "https://huggingface.co/yl4579/StyleTTS2-LibriTTS/resolve/main/Models/LibriTTS/epochs_2nd_00020.pth"
+
+# 5. Extract FRIDAI dataset
+mkdir -p Data/FRIDAI
+unzip /workspace/styletts2_data.zip -d Data/FRIDAI/
+# Move files if nested
+mv Data/FRIDAI/styletts2_data/* Data/FRIDAI/ 2>/dev/null || true
+
+# 6. FIX SPEAKER ID - Must be numeric, not string!
+sed -i 's/|FRIDAI/|0/g' Data/FRIDAI/train_list.txt
+sed -i 's/|FRIDAI/|0/g' Data/FRIDAI/val_list.txt
+
+# 7. Create config - copy from config.yml and change paths
+cp Configs/config.yml Configs/config_fridai_v2.yml
+sed -i 's|/local/LJSpeech-1.1/wavs|Data/FRIDAI/wavs|g' Configs/config_fridai_v2.yml
+sed -i 's|Data/train_list.txt|Data/FRIDAI/train_list.txt|g' Configs/config_fridai_v2.yml
+sed -i 's|Data/val_list.txt|Data/FRIDAI/val_list.txt|g' Configs/config_fridai_v2.yml
+
+# 8. Fix dataloader for containers
+sed -i 's/num_workers=2/num_workers=0/g' train_first.py
+
+# 9. Upgrade PyTorch (required for security features)
+pip install torch==2.6.0 torchaudio==2.6.0 torchvision==0.21.0 --index-url https://download.pytorch.org/whl/cu121
+pip install --upgrade transformers
+
+# 10. Fix torch.load for new PyTorch
+sed -i "s/torch.load(model_path, map_location='cpu')/torch.load(model_path, map_location='cpu', weights_only=False)/g" models.py
+
+# 11. START TRAINING (CUDA_LAUNCH_BLOCKING fixes the freeze!)
+CUDA_LAUNCH_BLOCKING=1 python train_first.py --config_path Configs/config_fridai_v2.yml
+```
+
+### Troubleshooting Guide (Issues We Hit)
+
+| Issue | Symptom | Fix |
+|-------|---------|-----|
+| Windows line endings | `$'\r': command not found` | `sed -i 's/\r$//' file` |
+| Google Drive blocked | gdown fails silently | Use wget + HuggingFace URL |
+| Speaker ID error | `invalid literal for int() 'FRIDAI'` | `sed -i 's/\|FRIDAI/\|0/g'` |
+| Dataloader hangs | No output, training frozen | `num_workers=0` in train_first.py |
+| Wrong paths in config | `soundfile.LibsndfileError` | Verify root_path is `Data/FRIDAI/wavs` |
+| PyTorch weights_only | Security error on load | Add `weights_only=False` to torch.load |
+| Training loop freeze | OOD sentences print then hang | `CUDA_LAUNCH_BLOCKING=1` env var |
+
+### Training Timeline
+- **Stage 1 (train_first.py):** ~4-6 hours - Text-to-Mel training
+- **Stage 2 (train_second.py):** ~2-3 hours - Diffusion training
+
+### After Training Completes
+```bash
+# Stage 2
+CUDA_LAUNCH_BLOCKING=1 python train_second.py --config_path Configs/config_fridai_v2.yml
+
+# Download model
+# Models saved to: Models/FRIDAI/
+```
+
+## Status: TRAINING RUNNING! 🔥
+Started: Feb 9, 2026
+GPU: A100 80GB on RunPod
 
 ---
 
