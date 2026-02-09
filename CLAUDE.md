@@ -75,7 +75,24 @@ curl http://localhost:5000/health  # Backend
 
 ## Status: TRAINING RUNNING! 🔥
 
-**RunPod:** A100 80GB | **Data:** 1,041 samples (34.4 min) | **Started:** Feb 9, 2026
+**RunPod:** A100 80GB ($1.50/hr) | **Data:** 1,041 samples (34.4 min) | **Started:** Feb 9, 2026
+
+### Current Progress (Updated Feb 9, 2026 ~9:30 PM)
+| Epoch | Validation Loss | Status |
+|-------|-----------------|--------|
+| 1 | 0.485 | ✅ Complete |
+| 4 | 0.392 | ✅ Complete |
+| 200 | ? | 🔄 Training... |
+
+**ETA:** ~6-7 hours for Stage 1 (196 epochs remaining @ ~2 min/epoch)
+
+### Check Training Status
+```bash
+cd /workspace/StyleTTS2
+tail -20 training.log
+ls -la Models/FRIDAI/*.pth | tail -5
+ps aux | grep train_first
+```
 
 ### Complete Setup Commands (What Actually Worked)
 
@@ -87,7 +104,7 @@ sed -i 's/\r$//' Configs/*.yml
 
 # Install deps
 pip install -r requirements.txt
-pip install phonemizer librosa==0.9.2 scipy==1.10.1 gdown pandas tensorboard
+pip install phonemizer librosa==0.9.2 scipy==1.10.1 gdown pandas tensorboard click munch
 apt-get update && apt-get install -y espeak-ng unzip
 
 # Download model (use wget, NOT gdown)
@@ -101,24 +118,24 @@ mv Data/FRIDAI/styletts2_data/* Data/FRIDAI/ 2>/dev/null || true
 # FIX SPEAKER ID (must be numeric!)
 sed -i 's/|FRIDAI/|0/g' Data/FRIDAI/train_list.txt Data/FRIDAI/val_list.txt
 
-# Config paths
+# Config paths - IMPORTANT: log_dir must be Models/FRIDAI not Models/LJSpeech!
 cp Configs/config.yml Configs/config_fridai_v2.yml
 sed -i 's|/local/LJSpeech-1.1/wavs|Data/FRIDAI/wavs|g' Configs/config_fridai_v2.yml
 sed -i 's|Data/train_list.txt|Data/FRIDAI/train_list.txt|g' Configs/config_fridai_v2.yml
 sed -i 's|Data/val_list.txt|Data/FRIDAI/val_list.txt|g' Configs/config_fridai_v2.yml
+sed -i 's|log_dir: "Models/LJSpeech"|log_dir: "Models/FRIDAI"|g' Configs/config_fridai_v2.yml
 
 # Fix dataloader
 sed -i 's/num_workers=2/num_workers=0/g' train_first.py
 
-# Upgrade PyTorch
-pip install torch==2.6.0 torchaudio==2.6.0 torchvision==0.21.0 --index-url https://download.pytorch.org/whl/cu121
+# CRITICAL: Upgrade PyTorch to 2.6+ (required for transformers security check)
+pip install torch==2.6.0+cu124 torchaudio==2.6.0+cu124 torchvision==0.21.0+cu124 --index-url https://download.pytorch.org/whl/cu124
 pip install --upgrade transformers
 
-# Fix torch.load
-sed -i "s/torch.load(model_path, map_location='cpu')/torch.load(model_path, map_location='cpu', weights_only=False)/g" models.py
-
-# START TRAINING
-CUDA_LAUNCH_BLOCKING=1 python train_first.py --config_path Configs/config_fridai_v2.yml
+# START TRAINING (use nohup to survive disconnects)
+cd /workspace/StyleTTS2
+nohup python train_first.py --config_path Configs/config_fridai_v2.yml > training.log 2>&1 &
+tail -f training.log
 ```
 
 ### Troubleshooting Guide
@@ -130,8 +147,9 @@ CUDA_LAUNCH_BLOCKING=1 python train_first.py --config_path Configs/config_fridai
 | Speaker ID error | `invalid literal for int()` | `sed -i 's/\|FRIDAI/\|0/g'` |
 | Dataloader hangs | Training frozen | `num_workers=0` in train_first.py |
 | Wrong paths | `soundfile.LibsndfileError` | Fix root_path in config |
-| PyTorch weights_only | Security error | Add `weights_only=False` |
-| Training freeze | OOD prints then hang | `CUDA_LAUNCH_BLOCKING=1` |
+| Checkpoints in wrong dir | Saved to Models/LJSpeech | Fix log_dir in config to Models/FRIDAI |
+| PyTorch CVE-2025-32434 | `ValueError: torch.load vulnerability` | Upgrade to PyTorch 2.6+ with cu124 |
+| Missing modules | `ModuleNotFoundError: click/munch/pandas` | `pip install click munch pandas tensorboard` |
 | Disk quota exceeded | Crash at epoch 19, sed fails | Delete unused files (see below) |
 
 ### Disk Quota Fix (Feb 9, 2026)
@@ -150,7 +168,9 @@ rm -f /workspace/fridai_voice_training.zip  # 49M already extracted
 
 ### After Stage 1 Completes
 ```bash
-CUDA_LAUNCH_BLOCKING=1 python train_second.py --config_path Configs/config_fridai_v2.yml
+cd /workspace/StyleTTS2
+nohup python train_second.py --config_path Configs/config_fridai_v2.yml > training_stage2.log 2>&1 &
+tail -f training_stage2.log
 ```
 
 ---
