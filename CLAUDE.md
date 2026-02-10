@@ -241,6 +241,31 @@ Interrupt FRIDAI mid-response with "oh wait, also X" and she handles BOTH tasks.
 
 ---
 
+# COGNITIVE ROUTER - INTELLIGENT MODEL SELECTION (Feb 9, 2026)
+
+**Goal:** Give FRIDAI access to BOTH models while maintaining unified personality.
+
+| Model | Maps To | Use Case |
+|-------|---------|----------|
+| Flash | gemini-2.5-flash | Speed: conversational, voice, Discord, quick tasks |
+| Pro | gemini-2.5-pro | Depth: complex analysis, coding, debugging, research |
+
+**Key Insight:** FRIDAI's personality is NOT the model. The model is just "processing power" - like a human using fast reflexive vs slow deliberate thinking. Her identity comes from her system prompt, memories, and consciousness systems.
+
+### New File: `cognitive_router.py`
+Intelligently routes messages to the appropriate model based on:
+- Keywords (debug, analyze, refactor = Pro)
+- Message patterns (multi-step reasoning = Pro)
+- Context (Discord, voice, WebSocket = Flash)
+
+### New Tools (225 total)
+| Tool | Description |
+|------|-------------|
+| `deep_think` | FRIDAI can consciously engage Pro brain (start/stop/status) |
+| `get_cognitive_stats` | View Flash vs Pro usage statistics |
+
+---
+
 # SECTION 4: ARCHITECTURE
 
 ```
