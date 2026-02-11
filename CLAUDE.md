@@ -1,6 +1,6 @@
 # FRIDAI - Complete Project Context
 
-## LAST UPDATED: February 9, 2026
+## LAST UPDATED: February 10, 2026
 
 ---
 
@@ -71,31 +71,55 @@ curl http://localhost:5000/health  # Backend
 
 ---
 
-# 🚀 STYLETTS 2 TRAINING - IN PROGRESS (Feb 9, 2026)
+# 🚀 STYLETTS 2 TRAINING - COMPLETE GUIDE (Feb 10, 2026)
 
-## Status: TRAINING RUNNING! 🔥
+## Status: STAGE 1 RETRAINING WITH LIBRITTS CONFIG 🔄
 
-**RunPod:** A100 80GB ($1.50/hr) | **Data:** 1,041 samples (34.4 min) | **Started:** Feb 9, 2026
+**RunPod:** A100 SXM 80GB ($1.49/hr) with **Network Volume** (30GB persistent storage)
 
-### Current Progress (Updated Feb 9, 2026 ~9:30 PM)
-| Epoch | Validation Loss | Status |
-|-------|-----------------|--------|
-| 1 | 0.485 | ✅ Complete |
-| 4 | 0.392 | ✅ Complete |
-| 200 | ? | 🔄 Training... |
+### ⚠️ CRITICAL DISCOVERY: Architecture Mismatch Issue
 
-**ETA:** ~6-7 hours for Stage 1 (196 epochs remaining @ ~2 min/epoch)
-
-### Check Training Status
-```bash
-cd /workspace/StyleTTS2
-tail -20 training.log
-ls -la Models/FRIDAI/*.pth | tail -5
-ps aux | grep train_first
+**The Problem:** Stage 1 trained with `config.yml` (LJSpeech architecture) but Stage 2's pretrained decoder (`epochs_2nd_00020.pth`) uses LibriTTS architecture. This causes size mismatch errors:
+```
+RuntimeError: size mismatch for module.generator.noise_convs.0.weight: [256, 1, 60] vs [256, 22, 12]
 ```
 
-### Complete Setup Commands (What Actually Worked)
+**The Solution:** Use LibriTTS config (`config_libritts.yml`) for BOTH stages so architectures match.
 
+### Current Training (Feb 10, 2026)
+- **Config:** `config_fridai_libritts.yml` (LibriTTS-based)
+- **Epochs:** 50 total (LibriTTS default)
+- **Progress:** Training, Mel Loss ~0.68, Val Loss decreasing
+- **Log:** `training_stage1_v2.log`
+
+### Files on RunPod Network Volume (`/workspace/`)
+```
+/workspace/
+├── StyleTTS2/
+│   ├── Configs/
+│   │   ├── config_fridai_libritts.yml  # CORRECT - LibriTTS architecture
+│   │   └── config_fridai_v2.yml        # OLD - LJSpeech (don't use for Stage 2)
+│   ├── Data/FRIDAI/
+│   │   ├── wavs/                       # Audio files (fridai_0001.wav, etc.)
+│   │   ├── train_list.txt              # Format: filename.wav|text|0
+│   │   └── val_list.txt
+│   ├── Models/
+│   │   ├── FRIDAI/                     # Output checkpoints
+│   │   └── LibriTTS/epochs_2nd_00020.pth  # Pretrained decoder (771MB)
+│   └── training_stage1_v2.log          # Current training log
+├── first_stage.pth                     # OLD Stage 1 (wrong architecture)
+└── styletts2_data.zip                  # Original training data
+```
+
+### Local Backups
+- `C:/Users/Owner/VoiceClaude/styletts2_data/first_stage.pth` (1.7GB - old, wrong arch)
+- `C:/Users/Owner/VoiceClaude/styletts2_data.zip`
+
+---
+
+## COMPLETE SETUP FROM SCRATCH (What Actually Works)
+
+### Step 1: Initial Setup
 ```bash
 cd /workspace && git clone https://github.com/yl4579/StyleTTS2.git && cd StyleTTS2
 
@@ -107,7 +131,11 @@ pip install -r requirements.txt
 pip install phonemizer librosa==0.9.2 scipy==1.10.1 gdown pandas tensorboard click munch
 apt-get update && apt-get install -y espeak-ng unzip
 
-# Download model (use wget, NOT gdown)
+# CRITICAL: Upgrade PyTorch to 2.6+ (required for transformers security check)
+pip install torch==2.6.0+cu124 torchaudio==2.6.0+cu124 torchvision==0.21.0+cu124 --index-url https://download.pytorch.org/whl/cu124
+pip install --upgrade transformers
+
+# Download pretrained model (use wget, NOT gdown - Google blocks it)
 mkdir -p Models/LibriTTS
 wget -O Models/LibriTTS/epochs_2nd_00020.pth "https://huggingface.co/yl4579/StyleTTS2-LibriTTS/resolve/main/Models/LibriTTS/epochs_2nd_00020.pth"
 
@@ -115,62 +143,123 @@ wget -O Models/LibriTTS/epochs_2nd_00020.pth "https://huggingface.co/yl4579/Styl
 mkdir -p Data/FRIDAI && unzip /workspace/styletts2_data.zip -d Data/FRIDAI/
 mv Data/FRIDAI/styletts2_data/* Data/FRIDAI/ 2>/dev/null || true
 
-# FIX SPEAKER ID (must be numeric!)
+# FIX SPEAKER ID (must be numeric, not "FRIDAI"!)
 sed -i 's/|FRIDAI/|0/g' Data/FRIDAI/train_list.txt Data/FRIDAI/val_list.txt
 
-# Config paths - IMPORTANT: log_dir must be Models/FRIDAI not Models/LJSpeech!
-cp Configs/config.yml Configs/config_fridai_v2.yml
-sed -i 's|/local/LJSpeech-1.1/wavs|Data/FRIDAI/wavs|g' Configs/config_fridai_v2.yml
-sed -i 's|Data/train_list.txt|Data/FRIDAI/train_list.txt|g' Configs/config_fridai_v2.yml
-sed -i 's|Data/val_list.txt|Data/FRIDAI/val_list.txt|g' Configs/config_fridai_v2.yml
-sed -i 's|log_dir: "Models/LJSpeech"|log_dir: "Models/FRIDAI"|g' Configs/config_fridai_v2.yml
-
-# Fix dataloader
+# Fix dataloader hanging
 sed -i 's/num_workers=2/num_workers=0/g' train_first.py
-
-# CRITICAL: Upgrade PyTorch to 2.6+ (required for transformers security check)
-pip install torch==2.6.0+cu124 torchaudio==2.6.0+cu124 torchvision==0.21.0+cu124 --index-url https://download.pytorch.org/whl/cu124
-pip install --upgrade transformers
-
-# START TRAINING (use nohup to survive disconnects)
-cd /workspace/StyleTTS2
-nohup python train_first.py --config_path Configs/config_fridai_v2.yml > training.log 2>&1 &
-tail -f training.log
 ```
 
-### Troubleshooting Guide
+### Step 2: Create LibriTTS-based Config (CORRECT WAY)
+```bash
+# Use LibriTTS config as base (matches pretrained decoder architecture)
+cp Configs/config_libritts.yml Configs/config_fridai_libritts.yml
+
+# Update paths for FRIDAI data
+sed -i 's|root_path: ""|root_path: "Data/FRIDAI/wavs"|g' Configs/config_fridai_libritts.yml
+sed -i 's|Data/train_list.txt|Data/FRIDAI/train_list.txt|g' Configs/config_fridai_libritts.yml
+sed -i 's|Data/val_list.txt|Data/FRIDAI/val_list.txt|g' Configs/config_fridai_libritts.yml
+sed -i 's|log_dir: "Models/LibriTTS"|log_dir: "Models/FRIDAI"|g' Configs/config_fridai_libritts.yml
+
+# Verify root_path is set correctly
+grep root_path Configs/config_fridai_libritts.yml
+# Should show: root_path: "Data/FRIDAI/wavs"
+```
+
+### Step 3: Train Stage 1
+```bash
+cd /workspace/StyleTTS2
+nohup python train_first.py --config_path Configs/config_fridai_libritts.yml > training_stage1_v2.log 2>&1 &
+tail -f training_stage1_v2.log
+```
+
+**Expected Output:**
+- Mel Loss: starts ~0.7, decreases to ~0.2-0.3
+- Val Loss: should decrease each epoch
+- Gen/Disc/Mono/S2S/SLM Loss: 0.00000 (normal for Stage 1)
+- Epochs: 50 (LibriTTS default)
+- Time: ~5-6 minutes total on A100
+
+### Step 4: Train Stage 2 (After Stage 1 Completes)
+```bash
+cd /workspace/StyleTTS2
+
+# Comment out ipdb debugger that blocks training
+sed -i 's/set_trace()/#set_trace()/g' train_second.py
+
+# Fix PyTorch 2.6 weights_only issue
+sed -i "s/torch.load(path, map_location='cpu')/torch.load(path, map_location='cpu', weights_only=False)/g" models.py
+
+# Start Stage 2
+nohup python train_second.py --config_path Configs/config_fridai_libritts.yml > training_stage2.log 2>&1 &
+tail -f training_stage2.log
+```
+
+### Step 5: Check Training Status
+```bash
+# View live log
+tail -f training_stage1_v2.log   # or training_stage2.log
+
+# Check if training is running
+ps aux | grep train
+
+# List checkpoints
+ls -la Models/FRIDAI/*.pth | tail -5
+
+# Check disk usage (RunPod quota issues)
+du -sh /workspace/*
+```
+
+---
+
+## TROUBLESHOOTING GUIDE
 
 | Issue | Symptom | Fix |
 |-------|---------|-----|
-| Windows line endings | `$'\r': command not found` | `sed -i 's/\r$//' file` |
-| Google Drive blocked | gdown fails | Use wget + HuggingFace URL |
-| Speaker ID error | `invalid literal for int()` | `sed -i 's/\|FRIDAI/\|0/g'` |
-| Dataloader hangs | Training frozen | `num_workers=0` in train_first.py |
-| Wrong paths | `soundfile.LibsndfileError` | Fix root_path in config |
-| Checkpoints in wrong dir | Saved to Models/LJSpeech | Fix log_dir in config to Models/FRIDAI |
-| PyTorch CVE-2025-32434 | `ValueError: torch.load vulnerability` | Upgrade to PyTorch 2.6+ with cu124 |
-| Missing modules | `ModuleNotFoundError: click/munch/pandas` | `pip install click munch pandas tensorboard` |
-| Disk quota exceeded | Crash at epoch 19, sed fails | Delete unused files (see below) |
+| **Architecture mismatch** | `RuntimeError: size mismatch for module.generator` | Use LibriTTS config, not LJSpeech |
+| **All NaN losses** | Stage 2 shows NaN for everything | Wrong config architecture OR missing pretrained |
+| **Windows line endings** | `$'\r': command not found` | `sed -i 's/\r$//' file` |
+| **Google Drive blocked** | gdown fails silently | Use wget + HuggingFace URL |
+| **Speaker ID error** | `invalid literal for int()` | `sed -i 's/\|FRIDAI/\|0/g'` on train/val lists |
+| **Dataloader hangs** | Training frozen at start | `sed -i 's/num_workers=2/num_workers=0/g' train_first.py` |
+| **soundfile.LibsndfileError** | Can't load audio | Fix `root_path` in config to point to wavs folder |
+| **Checkpoints wrong dir** | Saved to Models/LJSpeech | Fix `log_dir` in config to `Models/FRIDAI` |
+| **PyTorch CVE-2025-32434** | `ValueError: torch.load vulnerability` | Upgrade to PyTorch 2.6+ |
+| **weights_only error** | `weights_only=True` blocking load | Add `weights_only=False` to torch.load in models.py |
+| **ipdb set_trace() blocks** | Training stuck in debugger | Comment out: `sed -i 's/set_trace()/#set_trace()/g' train_second.py` |
+| **Disk quota exceeded** | `PytorchStreamWriter failed` | Delete old checkpoints: `rm -f Models/FRIDAI/epoch_*.pth` |
+| **Missing modules** | `ModuleNotFoundError` | `pip install click munch pandas tensorboard` |
+| **nano/vi not available** | Can't edit files on RunPod | Use sed or Python one-liners |
+| **Config corrupted (0 lines)** | sed temp file failed | Recreate: `cp Configs/config_libritts.yml Configs/config_fridai_libritts.yml` |
 
-### Disk Quota Fix (Feb 9, 2026)
-Training crashed at Epoch 19 with `PytorchStreamWriter failed` and `sed: Disk quota exceeded`.
-**Note:** Disk SPACE was fine (381TB available) but RunPod QUOTA was exceeded.
+---
 
-**Files deleted to fix (~5.5GB freed):**
+## WHY LIBRITTS CONFIG MATTERS
+
+**LJSpeech config (`config.yml`):**
+- Single speaker architecture
+- Smaller decoder layers
+- NOT compatible with LibriTTS pretrained decoder
+
+**LibriTTS config (`config_libritts.yml`):**
+- Multi-speaker architecture
+- Matches pretrained decoder layer sizes
+- REQUIRED for Stage 2 to work with pretrained model
+
+**Bottom Line:** If Stage 2 shows NaN losses or size mismatch errors, you used the wrong config for Stage 1. Must retrain Stage 1 with LibriTTS config.
+
+---
+
+## DISK QUOTA FIX (RunPod)
+
+Training crashes with `PytorchStreamWriter failed` even with 381TB "available" - it's QUOTA not space.
+
+**Files safe to delete:**
 ```bash
-rm -f Models/LibriTTS/epochs_2nd_00020.pth  # 1.4GB pretrained (no longer needed after load)
-rm -rf /workspace/tts_env                    # 5.3GB old venv
-rm -f /workspace/styletts2_data.zip         # 79M (already extracted)
-rm -rf /workspace/xtts_dataset              # 68M old data
-rm -rf /workspace/fridai_xtts_output        # 2M old output
-rm -f /workspace/fridai_voice_training.zip  # 49M already extracted
-```
-
-### After Stage 1 Completes
-```bash
-cd /workspace/StyleTTS2
-nohup python train_second.py --config_path Configs/config_fridai_v2.yml > training_stage2.log 2>&1 &
-tail -f training_stage2.log
+rm -f Models/LibriTTS/epochs_2nd_00020.pth  # 771MB (after loaded into memory)
+rm -rf /workspace/tts_env                    # Old venv if exists
+rm -f /workspace/styletts2_data.zip         # Already extracted
+rm -f Models/FRIDAI/epoch_*.pth             # Old checkpoints (keep latest only)
 ```
 
 ---
