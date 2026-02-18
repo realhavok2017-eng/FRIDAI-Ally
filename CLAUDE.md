@@ -1,6 +1,6 @@
 # FRIDAI - Complete Project Context
 
-## LAST UPDATED: February 11, 2026
+## LAST UPDATED: February 17, 2026
 
 ---
 
@@ -286,6 +286,106 @@ Interrupt FRIDAI mid-response with "oh wait, also X" and she handles BOTH tasks.
 
 **Files:** `continuation_handler.py`, `BackendClient.cs`, `AudioHandler.cs`
 **Endpoint:** POST `/barge-in/continue`
+
+---
+
+# ✅ SESSION: Feb 17, 2026 - GPU Neural Service Integration
+
+## What Was Done
+
+Wired FRIDAI's 1M neuron GPU brain meaningfully - neurons now actually DO something!
+
+### 1. Neural State Cache (Zero Latency) ✅
+
+**New File:** `neural_state_cache.py`
+
+- Background thread updates cache every 500ms from GPU service
+- `get_cached_neural_state()` returns instantly (<1ms, never blocks)
+- Eliminates 1-second timeout risk that was breaking Miles-level latency
+- Auto-starts on import
+
+### 2. Richer Brain-Informed Prompts ✅
+
+**Modified:** `fridai_identity.py`
+
+- `get_neural_state()` now uses cache instead of blocking HTTP
+- Mental state in prompts now includes:
+  - Emotional tone (neutral/engaged/heightened/subdued)
+  - Attention level (percentage)
+  - Self-awareness (high/normal/low)
+  - Intuition signals (quiet/subtle hints/active flashes)
+  - Memory activity (percentage)
+  - Dreaming state (yes/no)
+
+### 3. Dynamic Speech Guidance ✅
+
+**New Function:** `get_dynamic_speech_guidance()` in `fridai_identity.py`
+
+Neural activity now influences FRIDAI's speech patterns:
+- High emotion → more expressive reactions
+- Low attention → more hesitation, trailing off
+- High attention → crisp, direct, minimal filler
+- High intuition → natural "Oh!" and "Ah, I see" moments
+- Dreaming → contemplative, thoughtful pauses
+- High conflict → genuine uncertainty
+
+### 4. Hebbian Learning ✅
+
+**Modified:** `neural_gnn/gpu_service_v2.py`
+
+- NEW: `_hebbian_update()` method - neurons that fire together wire together
+- Called every 50 ticks (1 second at 50Hz)
+- Strengthens synaptic weights based on correlated activity
+- Patterns emerge over time from actual usage
+
+### 5. Reinforcement Endpoint ✅
+
+**New Endpoint:** `POST /reinforce` in `gpu_service_v2.py`
+
+- Accepts signal from -1 (bad) to +1 (good)
+- Temporarily boosts learning rate based on feedback
+- Forces immediate Hebbian update with boosted learning
+- Positive feedback literally strengthens current neural patterns
+
+### 6. Weight Persistence ✅
+
+**Modified:** `neural_gnn/gpu_service_v2.py`
+
+- NEW: `save_weights()` / `load_weights()` methods
+- Saves to `neural_gnn/learned_weights.pt`
+- Auto-saves every 5 minutes (15000 ticks)
+- Saves on shutdown via atexit hook
+- Loads on startup - learning persists across restarts
+
+### 7. Async Neural Feedback ✅
+
+**Modified:** `app.py`
+
+- NEW: `_neural_feedback_executor` ThreadPoolExecutor
+- NEW: `_async_neural_feedback()` function
+- Fire-and-forget after each /chat response
+- Stimulates neurons based on:
+  - Sentiment (positive/negative words)
+  - Complexity (long messages → workspace stimulation)
+  - Questions (curiosity → attention boost)
+- Reinforcement based on user feedback words ("thanks", "perfect", etc.)
+
+### Files Changed
+
+| File | Change |
+|------|--------|
+| `neural_state_cache.py` | **NEW** - 317 lines |
+| `fridai_identity.py` | Cache integration + dynamic speech |
+| `app.py` | Async neural feedback |
+| `neural_gnn/gpu_service_v2.py` | Hebbian + reinforce + persistence |
+
+### Latency Impact
+
+**ZERO** - All operations are async/cached/background. Miles-level response time preserved.
+
+### Git Commit
+
+`7265d52` - GPU Neural Service Integration - Meaningful Brain Wiring
 
 ---
 
