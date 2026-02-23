@@ -1,6 +1,6 @@
 # FRIDAI - Complete Project Context
 
-## LAST UPDATED: February 17, 2026
+## LAST UPDATED: February 23, 2026
 
 ---
 
@@ -32,7 +32,7 @@
 ## Quick Stats
 | Component | Value |
 |-----------|-------|
-| **Tools** | 223 |
+| **Tools** | 242 |
 | **LLM** | Gemini 2.5 (Pro=chat, Flash=voice) |
 | **Neurons** | **1,015,000** (GPU CSR optimized) |
 | **Synapses** | **203,000,000** |
@@ -68,6 +68,99 @@ C:\Users\Owner\VoiceClaude\launch_all.bat
 curl http://localhost:5001/health  # GPU service
 curl http://localhost:5000/health  # Backend
 ```
+
+---
+
+# 🤖 JARVIS FOUNDATION - FULL AUTONOMOUS TASK EXECUTION (Feb 23, 2026)
+
+## Overview
+Complete FULL JARVIS-level autonomous task execution based on MCU research (JARVIS, FRIDAY, GRIOT).
+
+**Key Feature:** Runs in PARALLEL with voice path - doesn't affect Miles-level response time!
+
+```
+Voice Path (Miles-fast, ~1-2 sec):
+  Boss speaks → STT → Gemini Flash → Response → TTS → Boss hears
+
+Task Path (Async background):
+  "Make reservation" → Orchestrator → Steps → Done
+  Speaks updates via speech_coordinator
+```
+
+## Components (6 modules, ~2,500 lines)
+
+| Module | Purpose |
+|--------|---------|
+| `jarvis/task_orchestrator.py` | Async multi-step task execution |
+| `jarvis/decision_engine.py` | Fast local decisions (no LLM calls) |
+| `jarvis/task_templates.py` | Pre-compiled common workflows |
+| `jarvis/phone_system.py` | Twilio calls/SMS with FRIDAI's voice |
+| `jarvis/transaction_engine.py` | Purchases with Boss confirmation |
+| `jarvis/proactive_engine.py` | Pattern learning & suggestions |
+
+## 19 JARVIS Tools
+
+**Orchestrator:** `jarvis_execute`, `jarvis_status`, `jarvis_cancel`, `jarvis_templates`
+**Phone:** `phone_call`, `phone_hangup`, `phone_sms`, `phone_history`, `phone_status`
+**Transactions:** `purchase_initiate`, `purchase_confirm`, `purchase_history`, `purchase_status`, `spending_summary`
+**Proactive:** `proactive_check`, `proactive_respond`, `proactive_patterns`, `proactive_add_pattern`, `proactive_status`
+
+## Key Architecture Decisions
+
+1. **Full JARVIS (not Hybrid)** - Tasks run async, voice path never blocked
+2. **GRIOT Safety Pattern** - NEVER auto-purchase, always confirm sensitive actions
+3. **Pre-compiled Templates** - 3-5 seconds vs 10-20 seconds for hybrid approach
+4. **Local Decision Engine** - No LLM calls for: select best, retry logic, validation, scheduling
+
+## Pre-built Task Templates
+
+- `restaurant_reservation` - Search, present options, call restaurant
+- `order_food` - Recall usual, add to cart, confirm purchase
+- `book_tickets` - Search events, select seats, purchase
+- `research_topic` - Deep multi-source research
+- `schedule_meeting` - Check availability, send invites
+- `send_message` - Compose, review, send
+- `shop_and_buy` - Search, compare, purchase with confirmation
+- `generic_task` - Dynamic LLM planning for unknown tasks
+
+## Confirmation Gates (GRIOT Pattern)
+
+FRIDAI pauses for Boss confirmation on:
+- **Any purchase** (even $0.01)
+- **Phone calls** (first time to a number)
+- **Sending messages** (email, SMS, social)
+- **Deleting data** (files, accounts)
+
+Everything else runs autonomously.
+
+## Phone System Setup
+
+Add Twilio credentials to `.env`:
+```
+TWILIO_ACCOUNT_SID=your_sid
+TWILIO_AUTH_TOKEN=your_token
+TWILIO_PHONE_NUMBER=+1234567890
+```
+
+Or store in vault for encrypted storage.
+
+## Example Usage
+
+**"FRIDAI, make a dinner reservation for 2 at an Italian place tonight"**
+1. Orchestrator spawns async task
+2. Searches restaurants (browser)
+3. Presents options to Boss
+4. Boss picks one
+5. FRIDAI calls restaurant (Twilio + ElevenLabs)
+6. Handles conversation, confirms booking
+7. Speaks summary: "Reserved at 7pm, confirmation #12345"
+
+**"FRIDAI, order my usual from DoorDash"**
+1. Recalls "usual" from memory (learned pattern)
+2. Opens DoorDash, adds items
+3. Shows: "Your usual - $32.50. Confirm?"
+4. Boss confirms → completes checkout
+5. "Order placed! ETA: 35 minutes"
 
 ---
 
