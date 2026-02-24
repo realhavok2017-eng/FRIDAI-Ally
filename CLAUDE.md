@@ -25,6 +25,12 @@
 2. **Fresh restart:** Kill all processes, then `C:\Users\Owner\VoiceClaude\launch_all.bat`
 3. **Real-time documentation:** Update CLAUDE.md after each change, push to both repos
 
+## CLAUDE CODE PERMISSIONS
+- **FULL PERMISSION** for everything - commands, file edits, all actions
+- **ONLY EXCEPTION:** Plans need approval before execution
+- Workflow: Plan → Show to X → Get approval → Execute
+- Never ask "can I?" or "should I?" - just do it (except plans)
+
 ---
 
 # SECTION 2: CURRENT SYSTEM STATE
@@ -161,6 +167,293 @@ Or store in vault for encrypted storage.
 3. Shows: "Your usual - $32.50. Confirm?"
 4. Boss confirms → completes checkout
 5. "Order placed! ETA: 35 minutes"
+
+---
+
+# 🥽 VR JARVIS WORKSHOP - Quest 3 WebXR (Feb 23, 2026)
+
+## Overview
+Iron Man JARVIS-style VR workshop for Quest 3. FRIDAI interacts with 3D models,
+runs physics simulations, and collaborates on designs in real-time.
+
+**Key Insight:** Runs as a WEB PAGE in Quest Browser (not native app).
+FRIDAI controls everything via WebSocket - true real-time JARVIS experience.
+
+## Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                        QUEST 3 (VR)                              │
+│  ┌───────────────────────────────────────────────────────────┐  │
+│  │  Quest Browser → http://192.168.0.230:8080                 │  │
+│  │  • Three.js Scene (3D model viewer)                        │  │
+│  │  • Physics Visualization (real-time from PyBullet)         │  │
+│  │  • Hand tracking interaction                               │  │
+│  └────────────────────────────WebSocket───────────────────────┘  │
+└─────────────────────────────────┼───────────────────────────────┘
+                                  │
+                                  ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                    FRIDAI BACKEND                                │
+│  • vr_jarvis/server/vr_jarvis_server.py (WebSocket :5051)       │
+│  • FreeCAD integration (CAD export to GLB)                      │
+│  • PyBullet physics (drop tests, stress analysis)               │
+│  • Meshy.ai (AI 3D generation)                                  │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+## How to Start
+
+```bash
+# Start VR JARVIS server (serves web + WebSocket)
+cd C:\Users\Owner\VoiceClaude
+python -m vr_jarvis.server.serve_vr
+```
+
+Then on Quest 3:
+1. Open Quest Browser
+2. Navigate to `http://192.168.0.230:8080`
+3. Click "Enter VR" button
+
+## Features
+
+| Feature | Description |
+|---------|-------------|
+| **Model Loading** | Load GLB/GLTF from FreeCAD or Meshy.ai |
+| **Grab & Move** | Pinch to grab, move models with hand tracking |
+| **Drop Test** | "FRIDAI, do a drop test from 2 meters" |
+| **Stress Analysis** | Visualize stress with thermal color scale |
+| **Explode View** | Separate assembly parts to see internals |
+| **Voice Commands** | Talk to FRIDAI while in VR |
+
+## Voice Commands (via FRIDAI)
+
+- "FRIDAI, show me the chassis model"
+- "Rotate it 45 degrees"
+- "Do a drop test from 2 meters"
+- "Highlight weak points"
+- "Explode the assembly"
+- "What material should I use here?"
+
+## Files
+
+```
+C:/Users/Owner/VoiceClaude/vr_jarvis/
+├── ARCHITECTURE.md          # Full design doc
+├── server/
+│   ├── vr_jarvis_server.py  # WebSocket server
+│   └── serve_vr.py          # Combined HTTP + WS launcher
+└── web/
+    └── index.html           # WebXR Three.js frontend
+```
+
+## Ports
+
+| Port | Service |
+|------|---------|
+| 8080 | HTTP (web files for Quest browser) |
+| 5051 | WebSocket (VR commands) |
+
+---
+
+# 🎯 FULL JARVIS - PICKUP POINT (Feb 23, 2026)
+
+## WHAT'S DONE (Code Written & Committed)
+
+**Total: ~17,800 lines of new code** - Commit `4d6c198`
+
+### Phase 1: Backend Stubs Fixed ✅
+- `vr_jarvis_server.py` - Explode view with trimesh GLB parsing
+- Meshy.ai 3D generation integration
+- FreeCAD/CadQuery model generation
+- PyBullet physics simulator getter
+
+### Phase 2-3A: Core VR Modules ✅
+| File | Lines | Purpose |
+|------|-------|---------|
+| `scene-manager.js` | ~220 | Three.js scene setup |
+| `model-manager.js` | ~370 | GLB loading, transforms |
+| `stark-hands.js` | ~600 | Tony Stark hand tracking (pinch, throw, scale, rotate) |
+| `hologram-effects.js` | ~590 | Hand trails, particles, glow |
+| `physics-feel.js` | ~420 | Momentum, bounce, weight, magnetic snap |
+| `transform-gizmo.js` | ~410 | 3D manipulation handles |
+
+### Phase 3B: Professional Tools ✅
+| File | Lines | Purpose |
+|------|-------|---------|
+| `measurement-tool.js` | ~380 | Distance, angle, area with 3D labels |
+| `section-tool.js` | ~320 | Clipping planes through models |
+| `annotation-tool.js` | ~390 | 3D text/arrow annotations |
+| `pcb-viewer.js` | ~460 | KiCAD PCB visualization |
+| `holo-panel.js` | ~520 | Iron Man floating UI panels |
+| `notifications.js` | ~380 | Toast/progress notifications |
+
+### Phase 4: Voice Commands ✅
+| File | Lines | Purpose |
+|------|-------|---------|
+| `voice_commands.py` | ~374 | Natural language parser (35+ command patterns) |
+
+---
+
+## ⚠️ HONEST STATUS - WHAT'S NOT TESTED
+
+| Component | Status | Reality |
+|-----------|--------|---------|
+| **WebXR on Quest 3** | 🔴 UNTESTED | Code written, never ran on actual Quest |
+| **Hand Tracking** | 🔴 UNTESTED | WebXR hand API code exists, never tested |
+| **Physics Streaming** | 🟡 PARTIAL | PyBullet calls exist, VR pipeline untested |
+| **Model Loading** | 🟡 PARTIAL | GLB code exists, not tested with real models |
+| **Voice via FRIDAI** | 🟡 PARTIAL | Parser exists, Quest mic→FRIDAI→TTS untested |
+| **Meshy.ai Integration** | 🟡 PARTIAL | API calls written, async VR flow untested |
+
+**Bottom Line:** 17K lines written without running once. WILL have bugs.
+
+---
+
+## 🔴 CRITICAL GAPS TO FIX
+
+### 1. HTTPS Required for Quest WebXR
+Quest browser needs HTTPS for WebXR features. Currently serving HTTP.
+
+**Fix Option A - Self-signed cert:**
+```bash
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout key.pem -out cert.pem
+# Then update serve_vr.py to use SSL
+```
+
+**Fix Option B - ADB port forward (easier):**
+```bash
+adb forward tcp:8080 tcp:8080
+# Access as localhost:8080 in Quest browser
+```
+
+### 2. No Test Models
+- No GLB files in `vr_jarvis/models/cache/`
+- Need real models to test loading
+- Download from Sketchfab or generate with Meshy
+
+### 3. Hand Tracking Calibration
+- Pinch thresholds are theoretical values
+- Will need real-device tuning
+- Joint positions may need adjustment
+
+### 4. Audio Pipeline Untested
+- Quest mic → WebSocket → FRIDAI → TTS → Quest speakers
+- Complex chain, completely untested
+
+---
+
+## 📋 NEXT SESSION TODO (In Order)
+
+### Step 1: Basic Connection Test (30 min)
+```bash
+# Start server
+cd C:\Users\Owner\VoiceClaude
+python -m vr_jarvis.server.serve_vr
+
+# On Quest: Open browser, go to http://192.168.0.230:8080
+# Check if page loads
+# Check browser console (Menu → More → Console) for errors
+```
+
+### Step 2: Fix HTTPS for WebXR (1-2 hours)
+Either add SSL to serve_vr.py OR use ADB port forward
+
+### Step 3: Add Test Models (30 min)
+```bash
+# Download test GLBs
+# Put in: C:\Users\Owner\VoiceClaude\vr_jarvis\models\cache\
+```
+
+### Step 4: Fix What Breaks (Unknown time)
+- Hand tracking calibration
+- WebSocket reconnection issues
+- Audio routing
+- Physics sync timing
+
+### Step 5: Polish (Days/Weeks)
+- Smooth hand interactions
+- Haptic feedback
+- Performance optimization
+- Edge cases
+
+---
+
+## 🎮 KEYBOARD SHORTCUTS (Desktop Testing)
+
+| Key | Action |
+|-----|--------|
+| M | Measurement tool |
+| C | Section cut |
+| A | Annotation |
+| P | PCB viewer |
+| H | Help panel |
+| E | Explode model |
+| R | Reset view |
+| Escape | Deselect |
+
+---
+
+## 🎤 VOICE COMMANDS
+
+```
+"explode the model" / "take it apart"
+"measure the distance"
+"section cut along x-axis"
+"add a note"
+"drop test from 2 meters"
+"highlight weak points"
+"rotate 45 degrees"
+"show help"
+```
+
+---
+
+## 📁 FILE STRUCTURE
+
+```
+C:/Users/Owner/VoiceClaude/vr_jarvis/
+├── ARCHITECTURE.md
+├── server/
+│   ├── serve_vr.py              # HTTP + WebSocket launcher
+│   ├── vr_jarvis_server.py      # WebSocket handlers
+│   └── voice_commands.py        # NLP command parser
+├── web/
+│   ├── index.html               # Main WebXR page (~55KB)
+│   └── js/
+│       ├── core/
+│       │   ├── scene-manager.js
+│       │   └── model-manager.js
+│       ├── effects/
+│       │   └── hologram-effects.js
+│       ├── interaction/
+│       │   ├── stark-hands.js
+│       │   └── physics-feel.js
+│       ├── tools/
+│       │   ├── transform-gizmo.js
+│       │   ├── measurement-tool.js
+│       │   ├── section-tool.js
+│       │   ├── annotation-tool.js
+│       │   └── pcb-viewer.js
+│       └── ui/
+│           ├── holo-panel.js
+│           └── notifications.js
+└── models/
+    └── cache/                   # Put test GLBs here
+```
+
+---
+
+## 🎯 REALISTIC EXPECTATIONS
+
+| Expectation | Reality |
+|-------------|---------|
+| "Works like Endgame" | ❌ Not yet - code written, not battle-tested |
+| "No dead buttons" | ⚠️ Buttons exist, some will fail first run |
+| "Production ready" | ❌ Alpha-quality prototype |
+| "Can use tomorrow" | 🟡 Maybe basic viewing, not full interaction |
+
+**We built the foundation. Making it work smoothly requires testing + debugging + iteration.**
 
 ---
 
