@@ -256,11 +256,11 @@ C:/Users/Owner/VoiceClaude/vr_jarvis/
 
 ---
 
-# 🎯 FULL JARVIS - PICKUP POINT (Feb 23, 2026)
+# 🎯 FULL JARVIS - PICKUP POINT (Feb 24, 2026)
 
 ## WHAT'S DONE (Code Written & Committed)
 
-**Total: ~17,800 lines of new code** - Commit `4d6c198`
+**Total: ~20,500 lines of new code** (17.8K + 2.7K Quest 3 features)
 
 ### Phase 1: Backend Stubs Fixed ✅
 - `vr_jarvis_server.py` - Explode view with trimesh GLB parsing
@@ -320,6 +320,10 @@ C:/Users/Owner/VoiceClaude/vr_jarvis/
 |-----------|--------|---------|
 | **WebXR on Quest 3** | 🔴 UNTESTED | Code written, never ran on actual Quest |
 | **Hand Tracking** | 🔴 UNTESTED | WebXR hand API code exists, never tested |
+| **Body Tracking** | 🔴 UNTESTED | 84-joint IOBT code written (Feb 24) |
+| **Spatial Anchors** | 🔴 UNTESTED | Persistence code written (Feb 24) |
+| **Scene Understanding** | 🔴 UNTESTED | Plane/mesh detection code (Feb 24) |
+| **Audio Lip Sync** | 🔴 UNTESTED | Audio-face.js written (Feb 24) |
 | **Physics Streaming** | 🟡 PARTIAL | PyBullet calls exist, VR pipeline untested |
 | **Model Loading** | 🟡 PARTIAL | GLB code exists, not tested with real models |
 | **Voice via FRIDAI** | 🟡 PARTIAL | Parser exists, Quest mic→FRIDAI→TTS untested |
@@ -441,13 +445,20 @@ C:/Users/Owner/VoiceClaude/vr_jarvis/
 │   ├── index.html               # Main WebXR page (~55KB)
 │   └── js/
 │       ├── core/
-│       │   ├── scene-manager.js
+│       │   ├── scene-manager.js # Updated with Quest 3 features
 │       │   └── model-manager.js
 │       ├── effects/
 │       │   └── hologram-effects.js
 │       ├── interaction/
 │       │   ├── stark-hands.js
-│       │   └── physics-feel.js
+│       │   ├── physics-feel.js
+│       │   ├── eye-tracking.js
+│       │   └── body-tracking.js # NEW (Feb 24) - 84-joint IOBT
+│       ├── world/               # NEW (Feb 24)
+│       │   ├── spatial-anchors.js  # Persistent anchors
+│       │   └── scene-understanding.js  # Planes + meshes
+│       ├── avatar/              # NEW (Feb 24)
+│       │   └── audio-face.js    # Audio-based lip sync
 │       ├── tools/
 │       │   ├── transform-gizmo.js
 │       │   ├── measurement-tool.js
