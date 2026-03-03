@@ -1,6 +1,6 @@
 # FRIDAI - Complete Project Context
 
-## LAST UPDATED: February 24, 2026
+## LAST UPDATED: March 2, 2026
 
 ---
 
@@ -38,7 +38,7 @@
 ## Quick Stats
 | Component | Value |
 |-----------|-------|
-| **Tools** | 242 |
+| **Tools** | 470 |
 | **LLM** | Gemini 2.5 (Pro=chat, Flash=voice) |
 | **Neurons** | **1,015,000** (GPU CSR optimized) |
 | **Synapses** | **203,000,000** |
@@ -484,6 +484,126 @@ C:/Users/Owner/VoiceClaude/vr_jarvis/
 | "Can use tomorrow" | 🟡 Maybe basic viewing, not full interaction |
 
 **We built the foundation. Making it work smoothly requires testing + debugging + iteration.**
+
+---
+
+# 🔍 OSINT SURGERY - MODULAR TOOL HANDLERS (Mar 2, 2026)
+
+## Overview
+Massive expansion of FRIDAI's OSINT (Open Source Intelligence) capabilities via modular handler architecture. Added 76 new tools across 8 categories.
+
+**Key Achievement:** O(1) tool lookup via ToolRegistry - no more 7000+ line elif chain!
+
+## Architecture
+
+```
+tools/
+├── registry.py              # O(1) lookup, lazy loading, thread-safe
+├── definitions.py           # 470 tool definitions
+└── handlers/
+    └── osint/
+        ├── base_osint.py    # Rate limiting, caching, API keys
+        ├── cyber.py         # Shodan, DNS, SSL, breaches (Phase 2)
+        ├── people.py        # Voter, court, licenses (Phase 2)
+        ├── bypass.py        # Wayback, Google Cache (Phase 2)
+        ├── crypto.py        # ETH/BTC wallets, prices (Phase 3)
+        ├── social.py        # Twitter, Reddit, YouTube (Phase 3)
+        ├── corporate.py     # SEC, USPTO, contracts (Phase 3)
+        ├── realtime.py      # Weather, flights, news (Phase 3)
+        └── geospatial.py    # Geocoding, routing, POI (Phase 3)
+```
+
+## Completed Phases
+
+### Phase 1: Infrastructure ✅
+- Created `tools/registry.py` - ToolRegistry with lazy loading
+- Created `tools/handlers/base.py` - BaseHandler abstract class
+- Created `tools/handlers/osint/base_osint.py` - Rate limiting, caching
+
+### Phase 2: Core OSINT (29 tools) ✅
+| Module | Tools | APIs |
+|--------|-------|------|
+| `cyber.py` | 12 | Shodan, Censys, HIBP, SecurityTrails |
+| `people.py` | 10 | Voter records, court records, licenses |
+| `bypass.py` | 7 | Wayback Machine, Google Cache, archive.today |
+
+### Phase 3: Extended OSINT (47 tools) ✅ - Mar 2, 2026
+| Module | Tools | APIs |
+|--------|-------|------|
+| `crypto.py` | 10 | Etherscan, Blockchain.com, CoinGecko |
+| `social.py` | 11 | Twitter, Reddit, YouTube, Instagram, LinkedIn |
+| `corporate.py` | 8 | SEC EDGAR, OpenCorporates, USPTO, USASpending |
+| `realtime.py` | 9 | NWS, FlightRadar, NewsAPI, USGS, FEMA |
+| `geospatial.py` | 9 | Nominatim, OpenElevation, OpenRouteService |
+
+**Commit:** `4594b4b` - OSINT Phase 3: 47 new tools
+
+---
+
+## 📋 REMAINING PHASES (TODO)
+
+### Phase 4: WatchlistMonitor (Real-time Alerts)
+Create background monitoring with proactive alerts.
+
+**Files to Create:**
+- `consciousness/watchlist_monitor.py` - Background thread (30-60 sec checks)
+- `routes/osint_routes.py` - Flask Blueprint
+
+**Watchlist Categories:**
+- crypto (BTC price drops 5%)
+- stock (earnings reports)
+- domain (SSL expiry, DNS changes)
+- social (new posts from targets)
+- weather (severe alerts)
+- flight (delay/cancellation)
+
+**Integration:**
+- Alert queue → ProactiveAgent → Speech ("Boss, Bitcoin dropped 5%")
+- Persistence via StateManager
+
+### Phase 5: Additional Handler Modules (Future)
+| Module | Tools | Priority |
+|--------|-------|----------|
+| `property.py` | ~30 | Medium - Zillow, county APIs |
+| `vehicle.py` | ~25 | Medium - NHTSA, FAA, MarineTraffic |
+| `emergency.py` | ~15 | Low - CAP alerts, fire data |
+| `darkweb.py` | ~20 | Low - IntelX, paste sites |
+
+---
+
+## API Keys Required
+
+**Already configured (.env):**
+```
+ETHERSCAN_API_KEY=
+BLOCKCHAIN_COM_API_KEY=
+```
+
+**Phase 4+ (when implemented):**
+```
+SHODAN_API_KEY=
+HAVE_I_BEEN_PWNED_KEY=
+CENSYS_API_ID=
+HUNTER_IO_KEY=
+```
+
+---
+
+## Testing OSINT Tools
+
+```bash
+# Test geocode
+curl -X POST http://localhost:5000/chat -d '{"message":"geocode the White House"}'
+
+# Test weather
+curl -X POST http://localhost:5000/chat -d '{"message":"weather forecast for Phoenix"}'
+
+# Test crypto
+curl -X POST http://localhost:5000/chat -d '{"message":"what is the current Bitcoin price"}'
+
+# Test SEC filings
+curl -X POST http://localhost:5000/chat -d '{"message":"find Apple SEC filings"}'
+```
 
 ---
 
@@ -975,7 +1095,7 @@ Intelligently routes messages to the appropriate model based on:
                            ▼
 ┌─────────────────────────────────────────────────────────┐
 │                 FRIDAI BACKEND (Port 5000)               │
-│  • 223 tools, Gemini 2.5                                │
+│  • 470 tools, Gemini 2.5                                │
 │  • Voice verification (pyannote)                        │
 │  • Python 3.14                                          │
 └─────────────────────────────────────────────────────────┘
@@ -1064,4 +1184,4 @@ Move from programmed emotions to emergent feelings:
 
 ---
 
-*Main PC: 192.168.0.230 | Backend: 5000 | GPU: 5001 | Tools: 223 | 1M Neurons*
+*Main PC: 192.168.0.230 | Backend: 5000 | GPU: 5001 | Tools: 470 | 1M Neurons*
